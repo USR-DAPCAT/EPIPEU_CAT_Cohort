@@ -1,0 +1,494 @@
+---
+title: "Epipeucat cohorte Longitudinal Retospectiva.Evento DFD."
+author: "Jordi Real & Rai Puig"
+website: "https://github.com/USR-DAPCAT/"
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+
+
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    fig_caption: true
+    css: logos_css/usr_styles.css
+  pdf_document: default
+  word_document: default
+
+params:
+  dir_dades_desti: "dades/mostra"
+---
+
+&nbsp;
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"https://www.idiapjgol.org/images/logo.png\" style=\"float: right ;width: 130px;\"/>')
+     $head.prepend('<img src=\"https://avatars2.githubusercontent.com/u/57066591?s=200&v=4\" style=\"margin-left:25% ;width: 80px;\"/>')
+     $head.prepend('<img src=\"logos_css/logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
+   });
+</script>
+
+
+<div class="watermark">DRAFT</div>
+
+****
+
+## 0. Estado:
+**Ventanas de agregaciones**
+
+&check; INCLUSIO.DM2                [ventana.dias=c(-Inf,0)]   <br/>
+&check; DG.(problemas de salud)     [ventana.dias=c(-Inf,0)]   <br/>
+&check; GRUP365.UEIP                [ventana.dias=c(-365,0)]   <br/>
+&check; Deriv2018.                  [ventana.dias=c(-365,0)]   <br/>
+&check; FF.(Farmacos)               [ventana.dias=c(-90,0)]    <br/>
+&check; Analitiques+Cliniques       [ventana.dias=c(-365,0)]   <br/>
+&check; Tabaquisme                  [ventana.dias=c(-Inf,0)]   <br/>
+&check; GRUP.UEIPA                  [ventana.dias=c(-Inf,0)]   <br/>
+
+
+**Ultimas actualizaciones   Febrero/ 2021** 
+
+&check; Agrupadores para amputaciones y revascularizaciones.  <br/>
+&check; Solo 2 grupos con ulcera/pie diabetico ( primaria+hospitales) VS .sin ulcera/pie diabetico (primaria+hospitales). <br/>
+&check; Nuevas agregaciones de diagnosticos y farmacos. <br/>
+&check; Programacion de nuevas recodificaciones. <br/>
+&check; Tabla Descriptiva Exploratoria General, por varlidacion.  <br/>
+&check; Descriptiva Exploratoria General.Todas las variables  <br/>
+&check; Tabla UEIP:[Ulceras Extremidades Inferiores y/o Pie Diabetico] /UEIPA:[Ulceras Extremidades Inferiores y/o Pie Diabetico y/o Amputaciones] <br/>
+&check; Descriptiva Exploratoria General.BASAL.  <br/>
+&check; Descriptiva Exploratoria General.Comorbilidades.  <br/>
+&check; Descriptiva Exploratoria General.Antecedentes de Pie diabetico.  <br/>
+&check; Descriptiva Exploratoria General.Exploracion.  <br/>
+&check; Descriptiva Exploratoria General.Laboratorio.  <br/>
+&check; Descriptiva Exploratoria General.Tratamiento.  <br/>
+&check; Descriptiva Exploratoria General / UEIPA .  <br/> 
+ 
+ 
+**Realizado**
+
+&check; Lectura / importacion de archivos.  <br/>
+&check; Generacion de conductors.   <br/>
+&check; Revision de codigos.  <br/>
+&check; Agregacion de datos segun protocolo. <br/>
+&check; Calculo de varibles y recodificaciones. <br/>
+&check; Descriptiva exploratoria. <br/>
+&check; Nuevas agregaciones de diagnosticos y farmacos. <br/>
+&check; Programacion de nuevas recodificaciones. <br/>
+&check; Descriptiva Exploratoria General.Todas las variables.  <br/>
+&check; Tabla UEIP:[Ulceras Extremidades Inferiores y/o Pie Diabetico] /UEIPA:[Ulceras Extremidades Inferiores y/o Pie Diabetico y/o Amputaciones] <br/>
+&check; Descriptiva Exploratoria General.BASAL.  <br/>
+&check; Descriptiva Exploratoria General.Comorbilidades.  <br/>
+&check; Descriptiva Exploratoria General.Antecedentes de Pie diabetico.  <br/>
+&check; Descriptiva Exploratoria General.Exploracion.  <br/>
+&check; Descriptiva Exploratoria General.Laboratorio.  <br/>
+&check; Descriptiva Exploratoria General.Tratamiento.  <br/>
+&check; Descriptiva Exploratoria General / UEIPA .  <br/> 
+
+**Pendent**
+
+&check; Revision y depuracion de errores.   <br/>
+&check; Modelos multivariables.   <br/>
+
+# Fase de validacion de base
+
+## Fase Preparacion
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, include=F,size="huge")
+############
+#02.11.2020@
+############
+
+# EStudiar els missings (.na) i quan juguem amb Problemes i valors analatics o valors clinics! 
+# Dema 2.11.2020 , dia dels morts!
+
+gc()
+# libreries i funcions
+library("dplyr")
+library("lubridate")
+library("compareGroups")
+
+# Descarregar funcions github -
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+#######################################################
+#conductor_codis<-here::here("codis_peucat.xlsx")
+conductor_codis<-here::here("CATALEG_PROYECTO_Manel.xlsx")
+conductor<-here::here("conductor_Epipeu.xlsx")
+#######################################################
+# Llegir plana
+dt_plana_exc<-readRDS(here::here(params$dir_dades,"dt_plana_exc2.rds")) %>% as_tibble()
+# Filtrem  i ELIMINEM els Difunts anteriors al 2019!
+
+```
+
+
+## 10. Descriptiva Exploratoria General / UEIPA . 
+
+```{r resultats9, include=T}
+
+##Part3
+#formula_taula00_1<-formula.text("Taula00",y=c("GRUP365.UEIPA"),taulavariables = conductor,dt=dt_plana_exc)
+formu<-formula_table1("Taula01",y=c("GRUP365.UEIPA"),taulavariables = conductor,dt=dt_plana_exc)
+#
+
+#TAULA.Ulcera/Pie Diabético/Amputaciones(Primaria+Hospital)
+
+#table1::table1(~age + age2.cat + age3.cat + age4.cat + age6.cat + sexe + dnaix + situacio + tabac.valor + tabac2 + ALCOHOL.valor + temps_evolucio + temps_evolucio_cat + temps_evolucio_cat2 + temps_evolucio_cat3 + DG.HTA2 + DG.Hipercol2 + DG.ARTPER + DG.ARTPER2 + DG.AVC + DG.IC + DG.CI + DG.INS_REN_AG + DG.INS_RNC + DG.IRC2 + DG.NEFRPDM + DG.NEFRPDM3 + DG.PROTEINURIA + DG.NEUROPT + DG.RTP_DM + DG.ART_CHA + DG.EDE_MAL + DG.GANGRENA + DG.OSTEOMIELITIS + DG.AMPUTACIO_Ext_inferior + DG.IQ_ART + DG.PAT_UNG + DG.INF_PIEL_MEM_INF + DG.Macro.IC + DG.Micro + DG.Macro + IMC.valor + IMC.valor_cat2 + PES.valor + PAD.valor + PAS.valor + PAS_PAD2 + Polsos_Pdret.valor + Polsos_Pesq.valor + ITB_Dret.valor + ITB_Esqerre.valor + ITB_PediDret.valor + ITB_PediEsq.valor + ITB_TibialPostDret.valor + ITB_TibialPostEsq.valor + GLICADA.valor + GLICADA.valor_CAT + GLICADA_CAT2 + GLICADA_CAT3 + GLUCOSA.valor + GLUCOSA.valor_CAT + cT.valor + cT.valor_CAT + cHDL.valor + cHDL.valor_CAT + cLDL.valor + cLDL.valor_CAT3_ECV + cLDL.valor_CAT3_NO_ECV + cLDL.valor_ECV + cLDL.valor_NO_ECV + cLDL.valor_CAT + cLDL.valor_CAT2 + TG.valor + TG.valor_CAT + CREATININA.valor + CREATININA.valor_CAT + CKDEPI.valor + CKDEPI.valor_CAT + CKDEPI.valor_CAT2 + CAC.valor + CAC.valor_CAT + EXCPROTEINA.valor + EXCPROTEINA.valor_CAT + FF.Antiagregantes + FF.Antibioticos + FF.Anticoagulantes + FF.A10 + FF.Biguanidas + FF.Sulfonilureas + FF.Glinides + FF.Tiazolidinadiones + FF.ISGLT2 + FF.IDPP4 + FF.OtrAntidiabOrales + FF.InAlfaGluc + FF.aGLP1 + FF.InAccInt + FF.InAccLenta + FF.InAccRapida + FF.InMixta + FF.Ado + FF.Niad + FF.Insul + FF.Niad.Insul + FF.B01AA + FF.B01AC + FF.ABIO + FF.HTA + FF.Hipotensores_ANTICA + FF.Hipotensores_ARA + FF.Hipotensores_BBK + FF.Hipotensores_IECA + FF.Hipotensores_DIU + FF.Hipotensores_altres + FF.C10 + FF.Hipolipemiantes_ESTA + FF.Hipolipemiantes_FIB + FF.Hipolipemiantes_EZE + FF.Hipolipemiantes_altres + Deriv2018.CIRVASC + F365.Biguanidas + F365.Sulfonilureas + F365.Glinides + F365.Tiazolidinadiones + F365.ISGLT2 + F365.IDPP4 + F365.OtrAntidiabOrales + F365.InAlfaGluc + F365.aGLP1 + F365.InAccInt + F365.InAccLenta + F365.InAccRapida + F365.InMixta + F365.Ado + F365.Niad + F365.Insul + Deriv2018.ENDOt + count_NIAD_ADO_CAT + count_Antidiabeticos_CAT + INSUL_90 + count_NIAD_ADO_CAT_365 + count_Antidiabeticos_CAT_365 + INSUL_365 + GLICADA_CAT5a + GLICADA_CAT5b + GLICADA_CAT5c + GLICADA_CAT5d + GLICADA_CAT5_PS + GLICADA_CAT5_PP + Deriv2018.PODO + Deriv2018.UNIPEU + GRUP365.UEIP + GRUP365.PIE_Diabetico_ulcera_g_art_ch_ost + GRUP.UEIP + GRUP2 + GRUP365.UEIPA|GRUP365.UEIPA, data = dt_plana_exc,caption="taula 00.Variables TOTALES / UEIPA  -ulcera+pie+amputacion- (Primaria+Hospital).Un a?o  hacia atras.Descriptiva general:[Frecuencia,Media,Mediana,Q1,Q3]",               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]"),render.missing=NULL,render.categorical="FREQ (PCTnoNA%)")
+
+
+
+
+descrTable(GRUP365.UEIPA ~ dnaix   ,
+                method =2,
+                Q1 = 0, Q3 = 1,
+                data=dt_plana_exc,
+                include.miss = TRUE,
+                max.xlev = 100, 
+                show.p.overall=FALSE,
+                show.n = T,
+                hide.no="No",simplify=F)%>% export2md(header.background = "grey", header.color = "white", size=12,caption = "Taula 00.Variables TOTALES / UEIPA  -ulcera+pie+amputacion- (Primaria+Hospital).Descriptiva general:[Frecuencia,Mediana,Min,Max]")
+
+
+#
+
+
+#descrTable(formula_taula00_1,
+#                method =1,
+#                Q1 = 0, Q3 = 1,
+#                data=dt_plana_exc,
+#                include.miss = TRUE,
+#                max.xlev = 100, 
+#                show.p.overall=FALSE,
+#                show.n = T,
+#                hide.no="No",simplify=F)%>% export2md(header.background = "grey", header.color = "white", size=12,caption = "Taula 00.Variables TOTALES / UEIPA  -ulcera+pie+amputacion- (Primaria+Hospital).Un a?o  hacia atras.Descriptiva general:[Frecuencia,Media, Sd]")
+
+
+
+#table1::table1(~age+
+#temps_evolucio+
+#IMC.valor+             
+#GLICADA.valor+          
+#GLUCOSA.valor+          
+#cT.valor+               
+#cHDL.valor+            
+#cLDL.valor+   
+#cLDL.valor_ECV+
+#cLDL.valor_NO_ECV+  
+#TG.valor+              
+#CREATININA.valor+       
+#CKDEPI.valor+          
+#CAC.valor+             
+#EXCPROTEINA.valor | GRUP365.UEIPA, 
+#               data = dt_plana_exc,caption="Analisis descriptivo GENERAL.Solo variables continuas.",
+#               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]"))
+
+
+
+table1::table1(formu,
+               data = dt_plana_exc,caption = "Taula 00.Variables TOTALES /Antecedentes  UEIPA  -ulcera+pie+amputacion- (Primaria+Hospital).Descriptiva general",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+
+
+```
+
+
+## 11. Modelo Logistico Descriptivo de  Ulceras. 
+
+```{r resultats10, include=T, warning=F}
+
+
+
+#MODEL LOGISTIC EXPLORATORI!
+
+
+
+dt_plana_exc<-dt_plana_exc%>% mutate(GRUP365.UEIPA2=case_when(GRUP365.UEIPA=="No"~0,GRUP365.UEIPA=="Si"~ 1))
+
+
+
+c("ajuste1","ajuste2","ajuste3") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Tabla Basal", "Tabla_Cormobilidades","Tabla Antecedentes Pie Diabetico"),
+                    title = "Modelo Logistico Descriptivo de  antecedentes Ulceras",
+                    p.style = "numeric_stars")
+
+
+
+```
+
+
+```{r resultats11, include=T, warning=F}
+
+
+
+
+
+# NO funciona 2013!
+
+#####################
+c("ajuste4","ajuste5","ajuste6") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Tabla Exploracion", "Tabla Laboratorio","Tabla Tratamiento"),
+                    title = "Modelo Logistico Descriptivo de  antecedentes Ulceras",
+                    p.style = "numeric_stars")
+
+#####################
+
+```
+
+```{r resultats12, include=T, warning=F}
+
+
+
+
+
+#tots els significatius!
+
+c("ajuste7","ajuste8","ajuste9") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Tabla Basal", "Tabla_Cormobilidades","Tabla Antecedentes Pie Diabetico"),
+                    title = "Modelo Logistico Descriptivo de  antecedentes Ulceras",
+                    p.style = "numeric_stars")
+
+```
+
+```{r resultats13, include=T, warning=F}
+
+
+c("ajuste10","ajuste11","ajuste12") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Tabla Exploracion", "Tabla Laboratorio","Tabla Tratamiento"),
+                    title = "Modelo Logistico Descriptivo de  antecedentes Ulceras",
+                    p.style = "numeric_stars")
+
+```
+
+```{r resultats14, include=T, warning=F}
+
+
+##########
+#8.3.2021#
+##########
+
+#model definitiu!
+
+c("ajuste_FINAL") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Tabla Antecedentes Pie Diabetico"),
+                    title = "Modelo Logistico Descriptivo de  antecedentes Ulceras",
+                    p.style = "numeric_stars")
+```
+
+```{r resultats15, include=T, warning=F}
+
+
+
+c("ajuste_FINAL2") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Tabla Antecedentes Pie Diabetico"),
+                    title = "Modelo Logistico Descriptivo de  antecedentes Ulceras",
+                    p.style = "numeric_stars")
+
+
+
+```
+
+```{r resultats16, include=T, warning=F}
+
+
+# i)   Primer actualitazreem els Conductor+Cataleg (Bogdan)
+# ii)  Despres farem els models: TaulaBasal+TaulaComorb+TaulaAntPeuDiab+TaulaExploracio+TaulaLab+TaulaTract
+# iii) Escollim de cada model, les variables significatives<0.2!
+# iv)  Un cop fet, tots els models , en fem un general, i apliquem el mateix m?tode!
+# v)   Escollim , les variables significatives <0.2!
+# vi)  Tindrem un MODEL FINAL DESCRIPTIU, mai ser? ni Causal,no hi ha TEMPS, ni Predictiu!, nom?s ?s un model,per plantejar-se hip?tesis!.
+
+# vi) mai posar variables relacionadas amb l'outcome, fan falses hip?tesis!
+
+
+############
+#14.06.2021#
+############
+
+
+
+
+
+#M.i[ajuste13]
+#
+#Edad                                                       [01]
+#Sexo1: 2. Hombre                                           [02]
+#Tiempo de Evolucion Categorizado (Anos): >=5               [03]
+#tabac21. Riesgo Elevado  ref: no smokers                   [04]
+#Complicaciones macro vasculares                            [05]
+#Complicaciones micro vasculares                            [06]    
+#Hipertension                                               [07]
+#Dislipemia                                                 [08]
+#Antecedentes de ulceras/pie diab?                          [09]  
+#DG.AMPUTACIO_Ext_inferiorSi                                [10]
+#DG.IQ_ARTSi                                                [11]
+#DG.INF_PIEL_MEM_INFSi                                      [12]
+
+
+
+
+
+#M.ii[ajuste14]
+#
+#Edad                                                       [01] 
+#Sexo1: 2. Hombre                                           [02]
+#tabac21. Riesgo Elevado  ref: no smokers                   [03]
+#Complicaciones macro vasculares                            [04]
+#DG.NEUROPTSi                                               [05]
+#DG.RTP_DMSi                                                [06]
+#DG.INS_RNCSi                                               [07]
+#Hipertension                                               [08]
+#Dislipemia                                                 [09]
+#Antecedentes de ulceras/pie diab?????co                    [10]
+#DG.AMPUTACIO_Ext_inferiorSi                                [11]
+#DG.IQ_ARTSi                                                [12]
+#DG.INF_PIEL_MEM_INFSi                                      [13]
+
+
+#M.iii[ajuste15]
+#
+#Edad                                                       [01]
+#Sexo1: 2. Hombre                                           [02]
+#tabac21. Riesgo Elevado  ref: no smokers                   [03]
+#DG.ARTPER2Si                                               [04]
+#DG.AVCSi                                                   [05]
+#DG.ICSi                                                    [06]
+#DG.CISi                                                    [07]
+#DG.NEUROPTSi                                               [08]
+#DG.RTP_DMSi                                                [09]
+#DG.INS_RNCSi                                               [10]
+#Hipertension                                               [11]
+#Dislipemia                                                 [12]
+#Antecedentes de ulceras/pie diab?????co                    [13]
+#DG.AMPUTACIO_Ext_inferiorSi                                [14]
+#DG.IQ_ARTSi                                                [15]
+#DG.INF_PIEL_MEM_INFSi                                      [16]
+
+
+
+#M.iv[ajuste16]
+#
+#Edad                                                       [01]
+#Sexo1: 2. Hombre                                           [02]
+#tabac21. Riesgo Elevado  ref: no smokers                   [03]
+#FF.BiguanidasSi                                            [04]  
+#FF.SulfonilureasSi                                         [05]  
+#FF.GlinidesSi                                              [06]
+#FF.TiazolidinadionesSi                                     [07]
+#FF.ISGLT2Si                                                [08]  
+#FF.IDPP4Si                                                 [09]
+#FF.OtrAntidiabOralesSi                                     [10]
+#FF.InAlfaGlucSi                                            [11]
+#FF.aGLP1Si                                                 [12]
+#FF.InsulSi                                                 [13]
+
+
+
+#M.v[ajuste17]
+#
+#Edad                                                       [01] 
+#Sexo1: 2. Hombre                                           [02]  
+#tabac21. Riesgo Elevado  ref: no smokers                   [03]
+#FF.NiadSi                                                  [04]
+#FF.InsulSi                                                 [05]
+#FF.Hipotensores_ANTICASi                                   [06]
+#FF.Hipotensores_ARASi                                      [07]
+#FF.Hipotensores_BBKSi                                      [08]
+#FF.Hipotensores_IECASi                                     [09]
+#FF.Hipotensores_DIUSi                                      [10]  
+#FF.Hipotensores_altresSi                                   [11]
+#FF.C10Si                                                   [12]
+#FF.Hipolipemiantes_ESTASi                                  [13]
+#FF.Hipolipemiantes_FIBSi                                   [14]
+#FF.Hipolipemiantes_EZESi                                   [15]
+#FF.Hipolipemiantes_altresSi                                [16]
+
+
+
+
+
+#c("ajuste13","ajuste14","ajuste15") %>% 
+#  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+#  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+#  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Ajuste 13", "Ajuste 14","Ajuste 15"),
+#                    title = "Modelo Log?stico Descriptivo de  Ulceras Final",
+#                    p.style = "numeric_stars")
+
+
+
+# hem de mirar la colinealitat entre variables !!! opcio:!!
+
+c("ajuste13a","ajuste14a","ajuste15a") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Ajuste 13a", "Ajuste 14a","Ajuste 15a"),
+                    title = "Modelo Log?stico Descriptivo de  Ulceras Final",
+                    p.style = "numeric_stars")
+
+
+```
+
+
+```{r resultats17, include=T, warning=F}
+
+
+c("ajuste16","ajuste17") %>% 
+  map(~formula.text(.x,"GRUP365.UEIPA2",taulavariables = conductor,dt=dt_plana_exc))%>% 
+  map(~glm(.x,data = dt_plana_exc, family = "binomial")) %>% 
+  sjPlot::tab_model(digits=3, show.intercept = F,dv.labels = c("Ajuste 16", "Ajuste 17"),
+                    title = "Modelo Log?stico Descriptivo de  Ulceras Final",
+                    p.style = "numeric_stars")
+
+#dt_plana_exc<-dt_plana_exc%>%mutate(DG.AMPUTACIO_Ext_inferior2=ifelse(DG.AMPUTACIO_Ext_inferior=="Si",1,0)) 
+#cor(dt_plana_exc$DG.AMPUTACIO_Ext_inferior2,dt_plana_exc$GRUP365.UEIPA2)
+
+
+
+#cor(Weekly[, -9])
+
+
+
+
+```
+
+
+## 12. ANEXO: Codigos  diabetes TIPO 2
+
+```{r codis_diabetes2, include=T}
+
+readxl::read_excel(conductor_codis,col_types = "text")%>%select(cod,DM2,Descripcio)%>% filter(DM2=="DM2")%>%select(cod,Descripcio)%>% knitr::kable(caption="ICD10 Diabetes TIPO 2")
+
+```
+
+## 12. Salvar taula plana
+```{r salvar}
+saveRDS(dt_plana_exc, file=here::here(params$dir_dades,"dt_plana_exc2.rds"))
+```
+
+
+```
+
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by $Jordi Real$ $Rai Puig$ </a></p>
+<p style="text-align: center;">$Llepali System$ </a></p>
+<p style="text-align: center;"><span style="color: #808080;"><em><https://github.com/USR-DAPCAT/></em></span></p>
+
+
+

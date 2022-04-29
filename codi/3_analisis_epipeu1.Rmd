@@ -1,0 +1,439 @@
+---
+title: "Epipeucat cohorte Longitudinal Retospectiva.Evento DFD."
+author: "Jordi Real & Rai Puig"
+website: "https://github.com/USR-DAPCAT/"
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+
+
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    fig_caption: true
+    css: logos_css/usr_styles.css
+  pdf_document: default
+  word_document: default
+
+params:
+  dir_dades_desti: "dades/mostra"
+  ANY: '2018'
+---
+
+&nbsp;
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"https://www.idiapjgol.org/images/logo.png\" style=\"float: right ;width: 130px;\"/>')
+     $head.prepend('<img src=\"https://avatars2.githubusercontent.com/u/57066591?s=200&v=4\" style=\"margin-left:25% ;width: 80px;\"/>')
+     $head.prepend('<img src=\"logos_css/logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
+   });
+</script>
+
+
+<div class="watermark">DRAFT</div>
+
+****
+
+## 0. Estado:
+
+**Ventanas de agregaciones**
+
+&check; INCLUSIO.DM2                [ventana.dias=c(-Inf,0)]   <br/>
+&check; DG.(problemas de salud)     [ventana.dias=c(-Inf,0)]   <br/>
+&check; GRUP365.UEIP                [ventana.dias=c(-365,0)]   <br/>
+&check; Deriv2018.                  [ventana.dias=c(-365,0)]   <br/>
+&check; FF.(Farmacos)               [ventana.dias=c(-90,0)]    <br/>
+&check; Analitiques+Cliniques       [ventana.dias=c(-365,0)]   <br/>
+&check; Tabaquisme                  [ventana.dias=c(-Inf,0)]   <br/>
+&check; GRUP.UEIPA                  [ventana.dias=c(-Inf,0)]   <br/>
+
+
+**Ultimas actualizaciones   Febrero/ 2021** 
+
+&check; Agrupadores para amputaciones y revascularizaciones.  <br/>
+&check; Solo 2 grupos con ulcera/pie diabetico ( primaria+hospitales) VS .sin ulcera/pie diabetico (primaria+hospitales). <br/>
+&check; Nuevas agregaciones de diagnosticos y farmacos. <br/>
+&check; Programacion de nuevas recodificaciones. <br/>
+&check; Tabla Descriptiva Exploratoria General, por varlidacion.  <br/>
+&check; Descriptiva Exploratoria General.Todas las variables.  <br/>
+&check; Tabla UEIP:[Ulceras Extremidades Inferiores y/o Pie Diabetico] /UEIPA:[Ulceras Extremidades Inferiores y/o Pie Diabetico y/o Amputaciones] <br/>
+&check; Descriptiva Exploratoria General.BASAL.  <br/>
+&check; Descriptiva Exploratoria General.Comorbilidades.  <br/>
+&check; Descriptiva Exploratoria General.Antecedentes de Pie diabetico.  <br/>
+&check; Descriptiva Exploratoria General.Exploracion.  <br/>
+&check; Descriptiva Exploratoria General.Laboratorio.  <br/>
+&check; Descriptiva Exploratoria General.Tratamiento.  <br/>
+&check; Descriptiva Exploratoria General / UEIPA .  <br/> 
+ 
+ 
+**Realizado**
+
+&check; Lectura / importacion de archivos.  <br/>
+&check; Generacion de conductors.   <br/>
+&check; Revision de codigos.  <br/>
+&check; Agregacion de datos segun protocolo. <br/>
+&check; Calculo de varibles y recodificaciones. <br/>
+&check; Descriptiva exploratoria. <br/>
+&check; Nuevas agregaciones de diagnosticos y farmacos. <br/>
+&check; Programacion de nuevas recodificaciones. <br/>
+&check; Descriptiva Exploratoria General.Todas las variables.  <br/>
+&check; Tabla UEIP:[Ulceras Extremidades Inferiores y/o Pie Diabetico] /UEIPA:[Ulceras Extremidades Inferiores y/o Pie Diabetico y/o Amputaciones] <br/>
+&check; Descriptiva Exploratoria General.BASAL.  <br/>
+&check; Descriptiva Exploratoria General.Comorbilidades.  <br/>
+&check; Descriptiva Exploratoria General.Antecedentes de Pie diabetico.  <br/>
+&check; Descriptiva Exploratoria General.Exploracion.  <br/>
+&check; Descriptiva Exploratoria General.Laboratorio.  <br/>
+&check; Descriptiva Exploratoria General.Tratamiento.  <br/>
+&check; Descriptiva Exploratoria General / UEIPA .  <br/> 
+
+**Pendent**
+
+&check; Revision y depuracion de errores.   <br/>
+&check; Modelos multivariables.   <br/>
+
+# Fase de validacion de base
+
+## Fase Preparacion
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, include=F,size="huge")
+############
+#02.11.2020@
+############
+#
+
+gc()
+# libreries i funcions
+library("dplyr")
+library("lubridate")
+library("compareGroups")
+#
+source(here::here("codi/Flowchart_Box_Final2.r"))
+source(here::here("codi/criteris_exclusio_diagrama2.r"))
+#
+#
+# Descarregar funcions github -
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+#######################################################
+#conductor_codis<-here::here("codis_peucat.xlsx")
+conductor_codis<-here::here("CATALEG_PROYECTO_Manel.xlsx")
+conductor<-here::here("conductor_Epipeu.xlsx")
+#######################################################
+# Llegir plana
+dt_plana<-readRDS(here::here(params$dir_dades,"dt_plana2.rds")) %>% as_tibble()
+# Filtrem  i ELIMINEM els Difunts anteriors al 2019!
+
+# Filtrem:
+####################################################################################
+#dt_plana<-dt_plana%>%filter(dtindex>=params$bd.dindex & dtindex<=params$bd.dindex2)
+####################################################################################
+
+dt_plana<-dt_plana%>%filter(stringr::str_sub(dtindex,1,4)==params$ANY)
+
+
+
+```
+## 1. Flow chart 
+```{r Flow chart, include=T}
+
+#13.11.2020
+
+#
+
+flow_chart1<-criteris_exclusio_diagrama(dt=dt_plana,
+                                        taulavariables=conductor,
+                                        criteris = "exc_pre",
+                                        ordre="exc_ordre",
+                                        grups=NA,
+                                        etiquetes="descripcio",
+                                        sequencial = T,
+                                        pob_lab=c("epiPEUCAT DM2  ","epiPEUCAT DM2 sin exclusiones"),
+                                        colors=c("white","grey"),
+                                        forma=c("ellipse","box"))
+
+flow_chart1
+
+
+#flow_chart2<-criteris_exclusio_diagrama2(dt=dt_plana,
+#                                         taulavariables=conductor,
+#                                         criteris = "exc_pre",
+#                                         ordre="exc_ordre",
+#                                         grups=NA,
+#                                      etiquetes="descripcio",
+#                                         sequencial = T,
+#                                         pob_lab=c("Muestra epiPEUCAT DM2 ","Muestra epiPEUCAT DM2 sin exclusiones"),
+#                                         colors=c("white","grey"),
+#                                         POB=459331 ,
+#                                         POB_LAB="SIDIAP:La poblacion de pacientes con DM2 de 2017 aprox: ")
+
+
+#flow_chart2
+
+
+#Apliquem les EXCLUSIONS!
+dt_plana_exc<-criteris_exclusio(dt_plana,taulavariables=conductor,criteris="exc_pre")
+
+
+#Apliquem que surtin els MISSINGS a les TAULES , a partir del CONDUCTOR!
+dt_plana_exc<-dt_plana_exc%>%mutate_at(extreure.variables("missings",conductor,dt=dt_plana_exc),as.factor)
+
+#Etquetem  NOMS! de les  VAR  a partir del Conductor!
+dt_plana_exc<-etiquetar(dt_plana_exc,taulavariables=conductor)
+
+```
+## 2. Descriptiva Exploratoria General. Todas las variables.
+```{r resultats0, include=T}
+
+#i)
+formula_Taula00<-formula.text("Taula00",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_Taula00<-formula_table1("Taula01",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+#ii)
+#formula_TaulaBasal<-formula.text("TaulaBasal",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_TaulaBasal<-formula_table1("TaulaBasal2",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+#iii)
+#formula_TaulaComorb<-formula.text("TaulaComorb",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_TaulaComorb<-formula_table1("TaulaComorb",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+#iv)
+#formula_TaulaAnt_Peu_Diab<-formula.text("TaulaAntPeuDiab",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_TaulaAnt_Peu_Diab<-formula_table1("TaulaAntPeuDiab",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+#v)
+#formula_TaulaExploracio<-formula.text("TaulaExploracio",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_TaulaExploracio<-formula_table1("TaulaExploracio",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+#vi)
+#formula_TaulaLab<-formula.text("TaulaLab",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_TaulaLab<-formula_table1("TaulaLab",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+#vii)
+#formula_TaulaTract<-formula.text("TaulaTract",y="",taulavariables = conductor,dt=dt_plana_exc)
+formu_TaulaTract<-formula_table1("TaulaTract",y="",taulavariables = conductor,dt=dt_plana_exc)
+
+
+```
+
+```{r resultats1, include=T}
+
+#Part1
+#i)
+#descrTable(formula_Taula00,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva GENERAL 1 :[Frecuencia,Mediana,Min,Max]")
+
+
+table1::table1(formu_Taula00,
+               data = dt_plana_exc,caption = "Descriptiva GENERAL 1 :[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+#,render.missing=NULL
+
+```
+## 3. UEIP:[Ulceras Extremidades Inferiores y/o Pie Diabetico] /UEIPA:[Ulceras Extremidades Inferiores y/o Pie Diabetico y/o Amputaciones]
+```{r resultats8, include=T}
+#Part2
+
+#ii)
+descrTable(~ GRUP365.UEIP+
+             GRUP365.UEIPA
+             ,
+           method =2,
+           Q1 = 0, Q3 = 1,
+           data=dt_plana_exc,
+           include.miss = TRUE,
+           max.xlev = 100, 
+           show.p.overall=FALSE,
+           show.n = T,
+          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption="Descriptiva GENERAL 2:[Frecuencia,Mediana,Min,Max]")
+
+
+```
+## 4. Descriptiva Exploratoria General.BASAL.
+```{r resultats2, include=T}
+#ii)
+#descrTable(formula_TaulaBasal,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva Exploratoria General.BASAL :[Frecuencia,Mediana,Min,Max]")
+
+table1::table1(formu_TaulaBasal,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.BASAL :[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+
+```
+## 5. Descriptiva Exploratoria General.Comorbilidades.
+```{r resultats3, include=T}
+#iii)
+#descrTable(formula_TaulaComorb,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva Exploratoria   General.Comorbilidades:[Frecuencia,Mediana,Min,Max]")
+
+
+table1::table1(formu_TaulaComorb,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria   General.Comorbilidades:[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+```
+## 6. Descriptiva Exploratoria General.Antecedentes de Pie diabetico.
+```{r resultats4, include=T}
+#iv)
+#descrTable(formula_TaulaAnt_Peu_Diab,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva Exploratoria General.Antecedentes de Pie diabetico :[Frecuencia,Mediana,Min,Max]")
+
+table1::table1(formu_TaulaAnt_Peu_Diab,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Antecedentes de Pie diabetico :[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+
+
+
+
+```
+## 7. Descriptiva Exploratoria General.Exploracion.
+```{r resultats5, include=T}
+#v)
+#descrTable(formula_TaulaExploracio,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva Exploratoria General.Exploracion:[Frecuencia,Mediana,Min,Max]")
+
+table1::table1(formu_TaulaExploracio,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Exploracion:[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+
+```
+## 8. Descriptiva Exploratoria General.Laboratorio.
+```{r resultats6, include=T}
+#vi)
+ #descrTable(formula_TaulaLab,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva Exploratoria General.Laboratorio:[Frecuencia,Mediana,Min,Max]")
+
+
+#table1::table1(~age+
+#temps_evolucio+
+#IMC.valor+             
+#GLICADA.valor+          
+#GLUCOSA.valor+          
+#cT.valor+               
+#cHDL.valor+            
+#cLDL.valor+   
+#cLDL.valor_ECV+
+#cLDL.valor_NO_ECV+  
+#TG.valor+              
+#CREATININA.valor+       
+#CKDEPI.valor+          
+#CAC.valor+             
+#EXCPROTEINA.valor, 
+#               data = dt_plana_exc,caption="Analisis descriptivo GENERAL.Solo variables continuas.",
+#               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]"))
+
+
+table1::table1(formu_TaulaLab,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Laboratorio:[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+
+```
+## 9. Descriptiva Exploratoria General.Tratamiento.
+```{r resultats7, include=T}
+#vii)
+#descrTable(formula_TaulaTract,
+#           method =2,
+#           Q1 = 0, 
+#           Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 200, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva Exploratoria General.Tratamiento:[Frecuencia,Mediana,Min,Max]")
+
+
+
+table1::table1(formu_TaulaTract,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Tratamiento:[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+table1::table1(~ GRUP365B.UEIPA,
+               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Tratamiento:[Frecuencia,Mediana,Min,Max]",
+               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+
+
+
+
+
+
+
+
+```
+
+```{r salvar}
+saveRDS(dt_plana_exc, file=here::here(params$dir_dades,"dt_plana_exc2.rds"))
+```
+
+```
+
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by $Jordi Real$ $Rai Puig$ </a></p>
+<p style="text-align: center;">$Llepali System$ </a></p>
+<p style="text-align: center;"><span style="color: #808080;"><em><https://github.com/USR-DAPCAT/></em></span></p>
+
+
+

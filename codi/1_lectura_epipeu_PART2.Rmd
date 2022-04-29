@@ -1,0 +1,424 @@
+---
+title: 'Epipeucat cohorte Longitudinal Retospectiva.Evento DFD.Fecha de corte:`r params$bd.dindex`'
+author: "Jordi Real & Rai Puig"
+website: "https://github.com/USR-DAPCAT/"
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+
+
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    fig_caption: true
+    css: logos_css/usr_styles.css
+  pdf_document: default
+  word_document: default
+
+params:
+  dir_dades_origen: "../../DADES/EPIPEU_CAT3/dades/mostra" # "../DADES/EPIPEU_CAT3/dades/mostra"
+  dir_dades_desti: "dades/mostra" # dades/mostra"  # dades 
+
+---
+
+
+&nbsp;
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"https://www.idiapjgol.org/images/logo.png\" style=\"float: right ;width: 130px;\"/>')
+     $head.prepend('<img src=\"https://avatars2.githubusercontent.com/u/57066591?s=200&v=4\" style=\"margin-left:25% ;width: 80px;\"/>')
+     $head.prepend('<img src=\"logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
+   });
+</script>
+
+
+
+<div class="watermark">DRAFT</div>
+
+
+
+
+# FASE LECTURA
+
+>> Generacion de tabla plana y aplicacion de los primeros criterios inclusion 
+
+```{r setup, include = FALSE}
+#rm(list=ls())
+library(dplyr)
+# Funcions 
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+
+#conductor_codis<-here::here("codis_peucat.xlsx")
+
+#[17.2.2021]
+conductor_codis<-here::here("CATALEG_PROYECTO_Manel.xlsx")
+
+directori_dades_origen<-params$dir_dades_origen
+#   template: template.html
+#
+#
+#17.02.2021#
+dt_cataleg<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(cod,DM2,agr0,agr,agr1,agr_Farmac,agr11,agr1_amp,agr_Niad,agr_Insul_Ado,agr_Comp_Vasc,agr_CVD,agr_Comp_Vasc2)
+
+dt_cataleg2<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(domini,cod,DM2,agr0,agr,agr1,agr_Farmac,agr11,agr1_amp,agr_Niad,agr_Insul_Ado,agr_Comp_Vasc,agr_CVD,agr_Comp_Vasc2)
+
+dt_cataleg4<-dt_cataleg2%>% filter(domini=="farmacs_facturats")
+
+
+
+```
+## 1. Lectura 
+```{r lectura, include=T}
+# 1 Lectura -----------
+
+
+dt_plana<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part1.rds"))
+
+#dt_tabaquisme<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_tabaquisme_20200206_104913.rds")) %>% as_tibble()
+
+
+dt_tabaquisme<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_tabaquisme_20200206_104913.rds")) %>% as_tibble()
+dt_analitiques<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_variables_analitiques_20200206_104913.rds")) %>% as_tibble()
+dt_cliniques<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_variables_cliniques_20200206_104913.rds")) %>% as_tibble()
+
+# Fusiono cliniques + variables
+
+dt_variables<-dt_analitiques%>% bind_rows(dt_cliniques) %>% select(-agr) %>% 
+  left_join(select(dt_cataleg,cod,agr),by="cod") %>% 
+  select(-cod) %>% rename(cod=agr)
+
+
+#[1Entrega]
+# dt_procediments<-read.csv2(here::here(directori_dades_origen,"epiPEUCAT_PX_entregable_cmbdh_procediments_20201211_095238.csv"),sep="|",dec=",",header = TRUE,stringsAsFactors=F)%>%
+#   as_tibble()%>%select(idp,cod,dat,agr)
+
+
+
+
+```
+
+```{r netejar_fitxers}
+
+rm(dt_analitiques,dt_cliniques)
+
+gc()
+
+
+```
+
+
+
+## 6. PART 2
+
+```{r}
+dt_index<-dt_plana %>% select(idp,dtindex)
+
+```
+
+
+```{r agregacio_facturacio90dies, include=F}
+# 2.3 agregacio facturacio ------------
+## eps 3 mesos  abans!!! (minim data) 90 dies! [27.11.2020]
+
+dt_facturacio<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_farmacs_facturats_20200206_104913.rds")) %>% as_tibble()
+
+dtagr_facturacio<-dt_facturacio %>% transmute(idp,cod,dat,env)
+
+rm(dt_facturacio)
+memory.size(max=T)
+#memory.limit(size=4095)
+gc()
+
+# 
+dtagr_facturat_2018_EPIPEU1<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-90,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr_Farmac),
+  prefix="FF.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+dtagr_facturat_2018_EPIPEU2<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-90,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr),
+  prefix="FF.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+dtagr_facturat_2018_EPIPEU3<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-90,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr_Niad),
+  prefix="FF.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+gc()
+
+```
+
+
+
+```{r agregacio2_facturacio90dies, include=F}
+
+dtagr_facturat_2018_EPIPEU4<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-90,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr_Insul_Ado),
+  prefix="FF.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+dtagr_facturat_2018_EPIPEU5<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-90,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr0),
+  prefix="FFF.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+###########
+#24.2.2021#
+###########
+
+#
+gc()
+
+
+```
+
+
+```{r agregacio_facturacio365, include=F}
+
+#02.4.2021
+
+dtagr_facturat_2018_EPIPEU6<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-365,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr_Farmac),
+  prefix="F365.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+dtagr_facturat_2018_EPIPEU7<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-365,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr_Insul_Ado),
+  prefix="F365.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+dtagr_facturat_2018_EPIPEU8<-agregar_facturacio(
+  dt=dtagr_facturacio,
+  bd.dindex=dt_index,
+  finestra.dies=c(-365,0),
+  dt.agregadors=select(dt_cataleg4,cod,agr=agr_Niad),
+  prefix="F365.",
+  camp_agregador="agr",
+  agregar_data=T,
+  cataleg_mana = T)
+
+
+rm(dtagr_facturacio)
+gc()
+
+```
+
+```{r agregacio_variables, include=F}
+# 2.4 agregacio Analitiques+ Cliniques ------------
+# data mes propera!
+# analatiques
+
+# eps 1 anys abans!!! eps aqui hi ha ("<NA>.valor"+ "<NA>.dies"!!!!), hi ha codis MISSINGS!!!!
+dtagr_variables_2018_EPIPEU<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_index,finestra.dies = c(-365,0))
+#dtagr_variables_EPIPEU<-agregar_analitiques(dt=dt_variables,bd.dindex="20181231",finestra.dies = c(-Inf,0))
+
+
+rm(dt_variables)
+gc()
+
+```
+
+```{r agregacio_tabac, include=F}
+# 2.5 agregacio Tabaquisme ------------
+# tabaquisme: 
+dt_tabaquisme<-dt_tabaquisme %>% transmute(idp,cod="tabac",dat,val)
+dtagr_tabac_2018_EPIPEU<-agregar_analitiques(dt=dt_tabaquisme,bd.dindex=dt_index,finestra.dies = c(-Inf,0))
+
+#params$bd.dindex
+
+rm(dt_tabaquisme)
+gc()
+
+```
+
+
+```{r agregacio6, include=F}
+# 2.6 agregacio Poblacio ------------
+# mostra N=10000
+
+```
+
+
+
+## 3. Fusion de datos
+```{r trans_fusio,include=F}
+#Fem la Taula Final:[PLana]
+#
+#NO BORRAR!!
+#left_join(select(dtagr_problemes_2018_EPIPEU_AP_HOSP2b,-dtindex),by="idp")
+
+
+################
+#[30.04.2021]#
+#em canviat el dtindex! dtagr_facturat_2018_EPIPEU1...
+################
+
+#[1]#
+dtagr_facturat_2018_EPIPEU1<-dtagr_facturat_2018_EPIPEU1 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+#[2]# N
+dtagr_facturat_2018_EPIPEU2<-dtagr_facturat_2018_EPIPEU2 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+#[3]#
+dtagr_facturat_2018_EPIPEU3<-dtagr_facturat_2018_EPIPEU3 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+#[4]#
+dtagr_facturat_2018_EPIPEU4<-dtagr_facturat_2018_EPIPEU4 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+#[5]#
+dtagr_facturat_2018_EPIPEU5<-dtagr_facturat_2018_EPIPEU5 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+#[6]#
+dtagr_facturat_2018_EPIPEU6<-dtagr_facturat_2018_EPIPEU6 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+#[7]#
+dtagr_facturat_2018_EPIPEU7<-dtagr_facturat_2018_EPIPEU7 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+#[8]#
+dtagr_facturat_2018_EPIPEU8<-dtagr_facturat_2018_EPIPEU8 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+
+
+dtagr_variables_2018_EPIPEU<-
+  dtagr_variables_2018_EPIPEU %>% mutate(dtindex=as.Date(dtindex,origin = "1970-01-01") %>% data.to.string() %>% as.numeric())
+
+
+dtagr_tabac_2018_EPIPEU<-
+  dtagr_tabac_2018_EPIPEU %>% mutate(dtindex=as.Date(dtindex,origin = "1970-01-01") %>% data.to.string() %>% as.numeric())
+
+#H
+```
+
+
+
+```{r fusio,include=F}
+
+dt_plana<-dt_plana %>% 
+          left_join(dtagr_facturat_2018_EPIPEU1,by=c('idp','dtindex'))%>%
+           left_join(dtagr_facturat_2018_EPIPEU2,by=c('idp','dtindex'))%>%
+            left_join(dtagr_facturat_2018_EPIPEU3,by=c('idp','dtindex'))%>%
+             left_join(dtagr_facturat_2018_EPIPEU4,by=c('idp','dtindex'))%>%
+              left_join(dtagr_facturat_2018_EPIPEU5,by=c('idp','dtindex'))%>%
+               left_join(dtagr_facturat_2018_EPIPEU6,by=c('idp','dtindex'))%>%
+                left_join(dtagr_facturat_2018_EPIPEU7,by=c('idp','dtindex'))%>%
+                 left_join(dtagr_facturat_2018_EPIPEU8,by=c('idp','dtindex'))%>%
+                  left_join(dtagr_variables_2018_EPIPEU,by=c('idp','dtindex'))%>%
+                   left_join(dtagr_tabac_2018_EPIPEU,by=c('idp','dtindex'))
+
+
+
+
+# dt_plana<-dt_index%>%
+# left_join(dtagr_poblacio_2018_EPIPEU,by="idp")%>%
+#  left_join(dtagr_INCLUSIONS_2018_EPIPEU_AP_HOSP,by=c('idp','dtindex'))%>%
+#   left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1a,by=c('idp','dtindex') )%>%
+#    left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1b,by=c('idp','dtindex'))%>%
+#     left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1c,by=c('idp','dtindex'))%>%
+#      left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1d,by=c('idp','dtindex'))%>%
+#       left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2,by=c('idp','dtindex'))%>%
+#        left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2b,by=c('idp','dtindex'))%>%
+#         left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP3,by=c('idp','dtindex'))%>% 
+#          left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP4,by=c('idp','dtindex'))%>% 
+#           left_join(dtagr_facturat_2018_EPIPEU1,by=c('idp','dtindex'))%>%
+#            left_join(dtagr_facturat_2018_EPIPEU2,by=c('idp','dtindex'))%>%
+#             left_join(dtagr_facturat_2018_EPIPEU3,by=c('idp','dtindex'))%>%
+#              left_join(dtagr_facturat_2018_EPIPEU4,by=c('idp','dtindex'))%>%
+#               left_join(dtagr_facturat_2018_EPIPEU5,by=c('idp','dtindex'))%>%
+#                left_join(dtagr_facturat_2018_EPIPEU6,by=c('idp','dtindex'))%>%
+#                 left_join(dtagr_facturat_2018_EPIPEU7,by=c('idp','dtindex'))%>%
+#                  left_join(dtagr_facturat_2018_EPIPEU8,by=c('idp','dtindex'))%>%
+#                   left_join(dtagr_variables_2018_EPIPEU,by=c('idp','dtindex'))%>%
+#                    left_join(dtagr_tabac_2018_EPIPEU,by=c('idp','dtindex'))
+# 
+
+  
+#ull! No posem les derivacions!                
+#left_join(select(dtagr_derivacions_2018_EPIPEU_AP_HOSP,-dtindex),by="idp")%>%
+
+##########################################################################
+#                              16.2.2021                                 #
+##########################################################################
+
+#dt_plana<-dt_plana%>%filter(entrada<=params$bd.dindex & params$bd.dindex<=sortida)
+
+#dt_plana<-dt_plana%>%mutate(exclusio1=ifelse(entrada<=params$bd.dindex & params$bd.dindex<=sortida ,0,1))
+
+
+
+```
+## 4. Errores de la B.D para corregir!
+```{r errors_charcot, include=T}
+#####################################################
+#DG.Pie_Ulcera_Sin_Charcot=="Si" i  DG.ART_CHA=="Si"#
+#####################################################
+#
+#
+#
+##(Pie diabetico y de ulceras de miembro inferior sin Charcot i Neuropat??a de Charcot="Si") -->[NO POT SER : 3 pacients amb resultats Erronis!]
+#
+#
+#Pacient i)
+#Error_Charcot1  
+#Pacient ii)
+#Error_Charcot2
+#Pacient iii)
+#Error_Charcot3
+
+#20-02.2021
+#vect<-as.vector(variable.names(dt_plana))
+#write.csv(vect, file="variables_ATC.csv")
+
+
+#####################################################
+```
+## 5. Salvar tabla plana
+```{r salvar}
+saveRDS(dt_plana, file=here::here(params$dir_dades_desti,"dt_plana.rds"))
+
+
+
+```
