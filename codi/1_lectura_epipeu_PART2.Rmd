@@ -74,8 +74,10 @@ dt_cataleg4<-dt_cataleg2%>% filter(domini=="farmacs_facturats")
 ```{r lectura, include=T}
 # 1 Lectura -----------
 
-
 dt_plana<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part1.rds"))
+dt_diagnostics_AP_HOSP<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part2.rds"))
+dt_poblacio<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part3.rds"))
+
 
 #dt_tabaquisme<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_tabaquisme_20200206_104913.rds")) %>% as_tibble()
 
@@ -127,13 +129,16 @@ dt_facturacio<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_f
 
 dtagr_facturacio<-dt_facturacio %>% transmute(idp,cod,dat,env)
 
-rm(dt_facturacio)
+#rm(dt_facturacio)
 memory.size(max=T)
 #memory.limit(size=4095)
 gc()
 
 # 
-dtagr_facturat_2018_EPIPEU1<-agregar_facturacio(
+
+
+
+dtagr_EPIPEU.Fact1<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-90,0),
@@ -143,7 +148,7 @@ dtagr_facturat_2018_EPIPEU1<-agregar_facturacio(
   agregar_data=T,
   cataleg_mana = T)
 
-dtagr_facturat_2018_EPIPEU2<-agregar_facturacio(
+dtagr_EPIPEU.Fact2<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-90,0),
@@ -153,7 +158,7 @@ dtagr_facturat_2018_EPIPEU2<-agregar_facturacio(
   agregar_data=T,
   cataleg_mana = T)
 
-dtagr_facturat_2018_EPIPEU3<-agregar_facturacio(
+dtagr_EPIPEU.Fact3<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-90,0),
@@ -171,7 +176,7 @@ gc()
 
 ```{r agregacio2_facturacio90dies, include=F}
 
-dtagr_facturat_2018_EPIPEU4<-agregar_facturacio(
+dtagr_EPIPEU.Fact4<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-90,0),
@@ -181,7 +186,7 @@ dtagr_facturat_2018_EPIPEU4<-agregar_facturacio(
   agregar_data=T,
   cataleg_mana = T)
 
-dtagr_facturat_2018_EPIPEU5<-agregar_facturacio(
+dtagr_EPIPEU.Fact5<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-90,0),
@@ -206,7 +211,7 @@ gc()
 
 #02.4.2021
 
-dtagr_facturat_2018_EPIPEU6<-agregar_facturacio(
+dtagr_EPIPEU.Fact6<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-365,0),
@@ -216,7 +221,7 @@ dtagr_facturat_2018_EPIPEU6<-agregar_facturacio(
   agregar_data=T,
   cataleg_mana = T)
 
-dtagr_facturat_2018_EPIPEU7<-agregar_facturacio(
+dtagr_EPIPEU.Fact7<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-365,0),
@@ -226,7 +231,7 @@ dtagr_facturat_2018_EPIPEU7<-agregar_facturacio(
   agregar_data=T,
   cataleg_mana = T)
 
-dtagr_facturat_2018_EPIPEU8<-agregar_facturacio(
+dtagr_EPIPEU.Fact8<-agregar_facturacio(
   dt=dtagr_facturacio,
   bd.dindex=dt_index,
   finestra.dies=c(-365,0),
@@ -237,7 +242,7 @@ dtagr_facturat_2018_EPIPEU8<-agregar_facturacio(
   cataleg_mana = T)
 
 
-rm(dtagr_facturacio)
+#rm(dtagr_facturacio)
 gc()
 
 ```
@@ -247,12 +252,14 @@ gc()
 # data mes propera!
 # analatiques
 
+#dtagr_epiTempusDM2.analitic
+
 # eps 1 anys abans!!! eps aqui hi ha ("<NA>.valor"+ "<NA>.dies"!!!!), hi ha codis MISSINGS!!!!
-dtagr_variables_2018_EPIPEU<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_index,finestra.dies = c(-365,0))
+dtagr_EPIPEU.analitic<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_index,finestra.dies = c(-365,0))
 #dtagr_variables_EPIPEU<-agregar_analitiques(dt=dt_variables,bd.dindex="20181231",finestra.dies = c(-Inf,0))
 
 
-rm(dt_variables)
+#rm(dt_variables)
 gc()
 
 ```
@@ -261,11 +268,11 @@ gc()
 # 2.5 agregacio Tabaquisme ------------
 # tabaquisme: 
 dt_tabaquisme<-dt_tabaquisme %>% transmute(idp,cod="tabac",dat,val)
-dtagr_tabac_2018_EPIPEU<-agregar_analitiques(dt=dt_tabaquisme,bd.dindex=dt_index,finestra.dies = c(-Inf,0))
+dtagr_EPIPEU.Tabac<-agregar_analitiques(dt=dt_tabaquisme,bd.dindex=dt_index,finestra.dies = c(-Inf,0))
 
-#params$bd.dindex
 
-rm(dt_tabaquisme)
+
+#rm(dt_tabaquisme)
 gc()
 
 ```
@@ -287,48 +294,49 @@ gc()
 #left_join(select(dtagr_problemes_2018_EPIPEU_AP_HOSP2b,-dtindex),by="idp")
 
 
+
 ################
 #[30.04.2021]#
 #em canviat el dtindex! dtagr_facturat_2018_EPIPEU1...
 ################
 
 #[1]#
-dtagr_facturat_2018_EPIPEU1<-dtagr_facturat_2018_EPIPEU1 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact1<-dtagr_EPIPEU.Fact1 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
 #[2]# N
-dtagr_facturat_2018_EPIPEU2<-dtagr_facturat_2018_EPIPEU2 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact2<-dtagr_EPIPEU.Fact2 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
 #[3]#
-dtagr_facturat_2018_EPIPEU3<-dtagr_facturat_2018_EPIPEU3 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact3<-dtagr_EPIPEU.Fact3 %>%  mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
 #[4]#
-dtagr_facturat_2018_EPIPEU4<-dtagr_facturat_2018_EPIPEU4 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact4<-dtagr_EPIPEU.Fact4 %>%  mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
 #[5]#
-dtagr_facturat_2018_EPIPEU5<-dtagr_facturat_2018_EPIPEU5 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact5<-dtagr_EPIPEU.Fact5 %>%  mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 #[6]#
-dtagr_facturat_2018_EPIPEU6<-dtagr_facturat_2018_EPIPEU6 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact6<-dtagr_EPIPEU.Fact6 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
 #[7]#
-dtagr_facturat_2018_EPIPEU7<-dtagr_facturat_2018_EPIPEU7 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact7<-dtagr_EPIPEU.Fact7 %>%  mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
 #[8]#
-dtagr_facturat_2018_EPIPEU8<-dtagr_facturat_2018_EPIPEU8 %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
+dtagr_EPIPEU.Fact8<-dtagr_EPIPEU.Fact8  %>% mutate(dtindex=data.to.string(dtindex) %>% as.numeric())
 
 
-dtagr_variables_2018_EPIPEU<-
-  dtagr_variables_2018_EPIPEU %>% mutate(dtindex=as.Date(dtindex,origin = "1970-01-01") %>% data.to.string() %>% as.numeric())
+dtagr_EPIPEU.analitic<-
+  dtagr_EPIPEU.analitic %>% mutate(dtindex=as.Date(dtindex,origin = "1970-01-01") %>% data.to.string() %>% as.numeric())
 
 
-dtagr_tabac_2018_EPIPEU<-
-  dtagr_tabac_2018_EPIPEU %>% mutate(dtindex=as.Date(dtindex,origin = "1970-01-01") %>% data.to.string() %>% as.numeric())
+dtagr_EPIPEU.Tabac<-
+  dtagr_EPIPEU.Tabac %>% mutate(dtindex=as.Date(dtindex,origin = "1970-01-01") %>% data.to.string() %>% as.numeric())
 
 #H
 ```
@@ -338,16 +346,16 @@ dtagr_tabac_2018_EPIPEU<-
 ```{r fusio,include=F}
 
 dt_plana<-dt_plana %>% 
-          left_join(dtagr_facturat_2018_EPIPEU1,by=c('idp','dtindex'))%>%
-           left_join(dtagr_facturat_2018_EPIPEU2,by=c('idp','dtindex'))%>%
-            left_join(dtagr_facturat_2018_EPIPEU3,by=c('idp','dtindex'))%>%
-             left_join(dtagr_facturat_2018_EPIPEU4,by=c('idp','dtindex'))%>%
-              left_join(dtagr_facturat_2018_EPIPEU5,by=c('idp','dtindex'))%>%
-               left_join(dtagr_facturat_2018_EPIPEU6,by=c('idp','dtindex'))%>%
-                left_join(dtagr_facturat_2018_EPIPEU7,by=c('idp','dtindex'))%>%
-                 left_join(dtagr_facturat_2018_EPIPEU8,by=c('idp','dtindex'))%>%
-                  left_join(dtagr_variables_2018_EPIPEU,by=c('idp','dtindex'))%>%
-                   left_join(dtagr_tabac_2018_EPIPEU,by=c('idp','dtindex'))
+          left_join(dtagr_EPIPEU.Fact1,by=c('idp','dtindex'))%>%
+           left_join(dtagr_EPIPEU.Fact2,by=c('idp','dtindex'))%>%
+            left_join(dtagr_EPIPEU.Fact3,by=c('idp','dtindex'))%>%
+             left_join(dtagr_EPIPEU.Fact4,by=c('idp','dtindex'))%>%
+              left_join(dtagr_EPIPEU.Fact5,by=c('idp','dtindex'))%>%
+               left_join(dtagr_EPIPEU.Fact6,by=c('idp','dtindex'))%>%
+                left_join(dtagr_EPIPEU.Fact7,by=c('idp','dtindex'))%>%
+                 left_join(dtagr_EPIPEU.Fact8,by=c('idp','dtindex'))%>%
+                  left_join(dtagr_EPIPEU.analitic,by=c('idp','dtindex'))%>%
+                   left_join(dtagr_EPIPEU.Tabac,by=c('idp','dtindex'))
 
 
 
@@ -390,7 +398,25 @@ dt_plana<-dt_plana %>%
 
 
 ```
-## 4. Errores de la B.D para corregir!
+
+## 4. Fusion de datos[amb la gran FUNCIO.]
+```{r fusio2,include=F}
+
+
+dt_parametres<-read_excel(here::here(conductor_codis),sheet = "parametres")
+
+
+dt_temp<-Generar_taula_plana(dt_index,cataleg = conductor_codis,parametres = dt_parametres)%>%select(-dtindex)
+
+
+
+dt_plana2<-dt_index%>%
+left_join(dt_poblacio,by="idp")%>%
+ left_join(dt_temp,by=c('idp'))
+
+```
+
+## 5. Errores de la B.D para corregir!
 ```{r errors_charcot, include=T}
 #####################################################
 #DG.Pie_Ulcera_Sin_Charcot=="Si" i  DG.ART_CHA=="Si"#

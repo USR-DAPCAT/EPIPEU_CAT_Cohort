@@ -345,7 +345,11 @@ left_join(dt_poblacio,by="idp")%>%
 
 ## 5. Salvar part1 
 ```{r SALVAR}
+
 saveRDS(dt_plana, file=here::here(params$dir_dades_desti,"dt_plana_part1.rds"))
+saveRDS(dt_diagnostics_AP_HOSP,file=here::here(params$dir_dades_desti,"dt_plana_part2.rds"))
+saveRDS(dt_poblacio,file=here::here(params$dir_dades_desti,"dt_plana_part3.rds"))
+
 
 ```
 
