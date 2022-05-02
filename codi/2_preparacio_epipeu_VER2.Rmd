@@ -104,22 +104,22 @@ dt_plana<-dt_plana%>% mutate(tabac2=case_when(tabac.valor==0~0,
 # my.max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
 
 
-dt_plana<-dt_plana %>%
-             group_by(idp)%>%mutate(DG.UEIPA.365.ULCERA_PIE=sum(DG.UEIPA.365.ULC_MI_CMBD,
-                                                                DG.UEIPA.365.ULC_MI_CMBD_NE,
-                                                                DG.UEIPA.365.ULC_MI,na.rm=T))%>%ungroup()
+#dt_plana<-dt_plana %>%
+#             group_by(idp)%>%mutate(DG.UEIPA.365.ULCERA_PIE=sum(DG.UEIPA.365.ULC_MI_CMBD,
+#                                                                DG.UEIPA.365.ULC_MI_CMBD_NE,
+#                                                                DG.UEIPA.365.ULC_MI,na.rm=T))%>%ungroup()
 
 
-dt_plana<-dt_plana %>%
-             group_by(idp)%>%mutate(DG.UEIPA.INF.ULCERA_PIE=sum(DG.UEIPA.INF.ULC_MI_CMBD,
-                                                                DG.UEIPA.INF.ULC_MI_CMBD_NE,
-                                                                DG.UEIPA.INF.ULC_MI,na.rm=T))%>%ungroup()
+#dt_plana<-dt_plana %>%
+#             group_by(idp)%>%mutate(DG.UEIPA.INF.ULCERA_PIE=sum(DG.UEIPA.INF.ULC_MI_CMBD,
+#                                                                DG.UEIPA.INF.ULC_MI_CMBD_NE,
+#                                                                DG.UEIPA.INF.ULC_MI,na.rm=T))%>%ungroup()
 
 
-dt_plana<-dt_plana %>%
-             group_by(idp)%>%mutate(DG.UEIPA.INF_365.ULCERA_PIE=sum(DG.UEIPA.INF_365.ULC_MI_CMBD,
-                                                                DG.UEIPA.INF_365.ULC_MI_CMBD_NE,
-                                                                DG.UEIPA.INF_365.ULC_MI,na.rm=T))%>%ungroup()
+#dt_plana<-dt_plana %>%
+#             group_by(idp)%>%mutate(DG.UEIPA.INF_365.ULCERA_PIE=sum(DG.UEIPA.INF_365.ULC_MI_CMBD,
+#                                                                DG.UEIPA.INF_365.ULC_MI_CMBD_NE,
+#                                                                DG.UEIPA.INF_365.ULC_MI,na.rm=T))%>%ungroup()
 
 
 #K1<-dt_plana%>%select(idp,DG.UEIPA.365.ULCERA_PIE, DG.UEIPA.365.ULC_MI_CMBD,DG.UEIPA.365.ULC_MI_CMBD_NE,DG.UEIPA.365.ULC_MI)
@@ -262,7 +262,7 @@ dt_plana<-dt_plana%>%mutate(DG.NEUROPT2=ifelse(DG.NEUROPT==1,1,0))
 dt_plana<-dt_plana%>%mutate(FF.Niad.Insul=ifelse(FF.Niad==1 | FF.Insul==1  ,1,0)) 
 
 #viii)
-dt_plana<-dt_plana%>%mutate(GRUP2=case_when(GRUP365.UEIP ==1~ 1,GRUP.UEIP ==0~ 0))  
+#dt_plana<-dt_plana%>%mutate(GRUP2=case_when(GRUP365.UEIP ==1~ 1,GRUP.UEIP ==0~ 0))  
 
 
 #Prova dels Grups!

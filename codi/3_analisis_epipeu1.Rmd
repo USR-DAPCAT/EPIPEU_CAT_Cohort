@@ -247,17 +247,17 @@ table1::table1(formu_Taula00,
 #Part2
 
 #ii)
-descrTable(~ GRUP365.UEIP+
-             GRUP365.UEIPA
-             ,
-           method =2,
-           Q1 = 0, Q3 = 1,
-           data=dt_plana_exc,
-           include.miss = TRUE,
-           max.xlev = 100, 
-           show.p.overall=FALSE,
-           show.n = T,
-          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption="Descriptiva GENERAL 2:[Frecuencia,Mediana,Min,Max]")
+#descrTable(~ GRUP365.UEIP+
+#             GRUP365.UEIPA
+#             ,
+#           method =2,
+#           Q1 = 0, Q3 = 1,
+#           data=dt_plana_exc,
+#           include.miss = TRUE,
+#           max.xlev = 100, 
+#           show.p.overall=FALSE,
+#           show.n = T,
+#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption="Descriptiva GENERAL 2:[Frecuencia,Mediana,Min,Max]")
 
 
 ```
@@ -410,9 +410,9 @@ table1::table1(formu_TaulaTract,
                render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
 
 
-table1::table1(~ GRUP365B.UEIPA,
-               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Tratamiento:[Frecuencia,Mediana,Min,Max]",
-               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
+#table1::table1(~ GRUP365B.UEIPA,
+#               data = dt_plana_exc,caption = "Descriptiva Exploratoria General.Tratamiento:[Frecuencia,Mediana,Min,Max]",
+#               render.continuous=c(.="Mean (SD)", .="Median [Q1, Q3]",.="Median [Min, Max]"),render.categorical="FREQ (PCTnoNA%)")
 
 
 

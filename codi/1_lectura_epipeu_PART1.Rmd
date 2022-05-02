@@ -19,7 +19,7 @@ output:
 params:
   dir_dades_origen: "../../DADES/EPIPEU_CAT3/dades/mostra" # "../DADES/EPIPEU_CAT3/dades/mostra"
   dir_dades_desti: "dades/mostra" # dades/mostra"  # dades 
-  bd.dindex1: '20181231'
+  bd.dindex1: '20060101'
   bd.dindex2: '20181231'
 ---
 
@@ -83,7 +83,8 @@ dt_cataleg3<-dt_cataleg2%>% filter(domini=="diagnostics" |
 #30.03.2022
 dt_cataleg4<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(cod,agr)%>% filter(agr=="ULC_MI_CMBD" | 
                                                                                                 agr=="ULC_MI_CMBD_NE" |
-                                                                                                agr=="ULC_MI" |                                                                                                                                                      agr=="OSTEOMIELITIS" |
+                                                                                                agr=="ULC_MI" |
+                                                                                                agr=="OSTEOMIELITIS" |
                                                                                                 agr=="GANGRENA" |
                                                                                                 agr=="AMPUTACIO_Ext_inferior" |
                                                                                                 agr=="ART_CHA" )
@@ -163,6 +164,20 @@ gc()
 ```
 
 
+```{r genero_1_FILTRE}
+
+#Filtrem pacients (2008-2018)
+#Reference Population: These are the patients who were newly diagnosed with T2DM during the period under analysis (between 2008 and 2018).
+
+dt_poblacio<-
+  dt_poblacio  %>%
+  filter(entrada>=params$bd.dindex1 & sortida<=params$bd.dindex2)  
+
+gc()
+
+```
+
+
 
 ## 2. Agregacion de datos
 ```{r genero_dt_index}
@@ -170,11 +185,21 @@ gc()
 #[29.4.2021]#:
 
 #[29.4.2021]#: (2016-2018)
-dt_index<-
-  dt_poblacio %>% select(idp,entrada,sortida) %>% mutate(kk=1) %>%
-  left_join(tibble(dtindex=seq(params$bd.dindex1,params$bd.dindex2,by=10000),kk=1),by="kk") %>%
-  filter(entrada<=dtindex & dtindex<=sortida)  %>%  # Filtro per usuari actiu en data index
-  select(-c(kk,entrada,sortida))
+
+
+dt_index<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+                                        bd.dindex =params$bd.dindex2 ,
+                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1_amp),
+                                        finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
+
+dt_index<-dt_index %>%mutate(dtindex=DG.UEIPA) %>%select(idp,dtindex)
+
+
+#dt_index2<-
+#  dt_poblacio %>% select(idp,entrada,sortida) %>% mutate(kk=1) %>%
+#  left_join(tibble(dtindex=seq(params$bd.dindex1,params$bd.dindex2,by=10000),kk=1),by="kk") %>%
+#  filter(entrada<=dtindex & dtindex<=sortida)  %>%  # Filtro per usuari actiu en data index
+#  select(-c(kk,entrada,sortida))
 
 gc()
 
@@ -186,238 +211,85 @@ gc()
 
 ```{r agregacio1, include=F}
 
-##########################################################################
-#                              16.2.2021                                 #
-##########################################################################
-#bd.dindex: '20181231'
-#bd.dindex = params$bd.dindex
 
-# 2.1 agregacio INCLUSIO -----------
-#####################################################################################################
-# DM2!!! INCLUSIO!!
-#dtagr_INCLUSIONS_2018_EPIPEU_AP_HOSP<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                           bd.dindex = params$bd.dindex,
-#                                           dt.agregadors=select(dt_cataleg,cod,agr=DM2),
-#                                           finestra.dies=c(-Inf,0),prefix = "INCLUSIO.") 
+# mires que quan tenen l'event de : UEIPA , tenen DM2 (inclusió).
 
-
-
-
-#dtagr_INCLUSIONS_2018_EPIPEU_AP_HOSP<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                           bd.dindex = dt_index,
-#                                           dt.agregadors=select(dt_cataleg,cod,agr=DM2),
-#                                           finestra.dies=c(-Inf,0),prefix = "INCLUSIO.") 
-
-
-dtagr_INCLUSIONS_2018_EPIPEU_AP_HOSP<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Inclusio<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                            bd.dindex = dt_index,
                                            dt.agregadors=select(dt_cataleg3,cod,agr=DM2),
                                            finestra.dies=c(-Inf,0),prefix = "INCLUSIO.",cataleg_mana=T) 
-
-
-
-#variable.names(dtagr_INCLUSIONS_2018_EPIPEU_AP_HOSP)
-
-#D_TEMP<-dt_diagnostics_AP_HOSP%>%filter(cod=="E11")
-#D_TEMP<-dt_diagnostics_AP_HOSP%>%filter(cod=="E10")
-#dt_index = dt_temp %>% select(idp,dtindex)
-
-#exemple: //09.06.2021//
-
-
-
-
 gc()
 
 ```
 
 ```{r agregacio_diagnostics ,include=F}
 # 2.2 agregacio Problemes de salut ------------
-#(minim data) 
-#####################################################################################################
-# global!!! Font: GLOBAL!! 
 
-#i)
-#Patologies Previes! [cap -INF]
-#dtagr_problemes_2018_EPIPEU_AP_HOSP1a<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr),
-#                                        finestra.dies=c(-Inf,0),prefix = "DG.")
+#mirem els problemes de salut, a partir de la data del dia Index i cap enrera.[ a partir dels agregadors del cataleg: agr//agr_Comp_Vasc//agr_Comp_Vasc2//agr_CVD//] 
 
 
 
-#variable.names(dtagr_problemes_2018_EPIPEU_AP_HOSP1a)
-
-
-
-
-
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP1a<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Diag1<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex = dt_index,
                                         dt.agregadors=select(dt_cataleg3,cod,agr),
                                         finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
 
-#variable.names(dtagr_problemes_2018_EPIPEU_AP_HOSP1a)
 
-
-
-#dtagr_problemes_2018_EPIPEU_AP_HOSP1b<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr_Comp_Vasc),
-#                                        finestra.dies=c(-Inf,0),prefix = "DG.")
-
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP1b<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Diag2<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex = dt_index,
                                         dt.agregadors=select(dt_cataleg3,cod,agr=agr_Comp_Vasc),
                                         finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
 
 
-                                ############
-                                #17.02.2021#
-                                ############
-#dtagr_problemes_2018_EPIPEU_AP_HOSP1c<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex =dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr_CVD),
-#                                        finestra.dies=c(-Inf,0),prefix = "DG.")
+dtagr_EPIPEU_Diag3<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+                                        bd.dindex = dt_index,
+                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr_Comp_Vasc2),
+                                        finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
 
 
-dtagr_problemes_2018_EPIPEU_AP_HOSP1c<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Diag4<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex =dt_index,
                                         dt.agregadors=select(dt_cataleg3,cod,agr=agr_CVD),
                                         finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
 
 
 
-                                ############
-                                #24.02.2021#
-                                ############
-
-#dtagr_problemes_2018_EPIPEU_AP_HOSP1d<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr_Comp_Vasc2),
-#                                        finestra.dies=c(-Inf,0),prefix = "DG.")
-
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP1d<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-                                        bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr_Comp_Vasc2),
-                                        finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
-
-
 gc()
 
 
-# TOTS els casos que tinguin:: [PIE_Diabetico i/o ulcera i/o Gangrena i/o Articulaci? de Charcot i/o Osteomielitis] agr11
-#27.11.2020 canvi a infinit prova fet el 28.11.2020, ha d'anar 365 dies!
-#####################################################################################################
-# global!!! Font: GLOBAL!! 
-#[un any anterior!!]UEIP
-#ii)
 ```
 
 
-```{r agregacio_diagnostics2 ,include=F}
+```{r agregacio_diagnostics1,events ,include=F}
 
 gc()
 
-#dtagr_problemes_2018_EPIPEU_AP_HOSP2<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr1),
-#                                        finestra.dies=c(-365,0),prefix = "GRUP365.")
 
+# ? a Bogdan!
 
-dtagr_problemes_2018_EPIPEU_AP_HOSP2<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Event1<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1),
-                                        finestra.dies=c(-365,0),prefix = "GRUP365.",cataleg_mana=T)
+                                        dt.agregadors=select(dt_cataleg3,cod,agr),
+                                        finestra.dies=c(1,Inf),prefix = "EVENT.",cataleg_mana=T)
 
 
-
-#ii)[ABANS !!! NO BORRAR]UEIP
-#dtagr_problemes_2018_EPIPEU_AP_HOSP2b<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr11),
-#                                        finestra.dies=c(-365,0),prefix = "GRUP365.")
-
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP2b<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Event2<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr11),
-                                        finestra.dies=c(-365,0),prefix = "GRUP365.",cataleg_mana=T)
+                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr_Comp_Vasc),
+                                        finestra.dies=c(1,Inf),prefix = "EVENT.",cataleg_mana=T)
 
 
-
-
-#[cap -INF]UEIP
-#iii)
-#dtagr_problemes_2018_EPIPEU_AP_HOSP3<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr1),
-#                                        finestra.dies=c(-Inf,0),prefix = "GRUP.")
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP3<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Event3<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1),
-                                        finestra.dies=c(-Inf,0),prefix = "GRUP.",cataleg_mana=T)
+                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr_Comp_Vasc2),
+                                        finestra.dies=c(1,Inf),prefix = "EVENT.",cataleg_mana=T)
 
 
-
-
-#iv)[un any anterior!!]UEIPA
-#dtagr_problemes_2018_EPIPEU_AP_HOSP4<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg,cod,agr=agr1_amp),
-#                                        finestra.dies=c(-365,0),prefix = "GRUP365.")
-
-#Aquí ho hem canviat!!!! 
-
-#Ayer tuvimos una reunión para el primer artículo epiPEUCAT, 
-#nos hemos dado cuenta que algunas cosas se tienen que calcular 
-#de otra manera y por lo tanto hay que repetir el análisis:
-#1.  La variable "UEIPA -ulcera+pie+amputacio" 3277 (que engloba: ulcera, gangrena, osteomieliitis, charcot, amputaciones),  se tiene que modificar. #Las patologias charcot y amputaciones son crónicas y por vida, por lo tanto, todos los episodios anteriores "antecedentes" se tienen que considerar #casos actuales de UIEPA. En nivel de sitaxis, para estas 2 variables tienes que ampliar la ventana para cualquier momento, no solo últimos 12 meses.  
-#dtagr_problemes_2018_EPIPEU_AP_HOSP4<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-#                                        bd.dindex = dt_index,
-#                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1_amp),
-#                                        finestra.dies=c(-365,0),prefix = "GRUP365.",cataleg_mana=T)
- 
-
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP4<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+dtagr_EPIPEU_Event4<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1_amp),
-                                        finestra.dies=c(-Inf,0),prefix = "GRUP365.",cataleg_mana=T)
+                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr_CVD),
+                                        finestra.dies=c(1,Inf),prefix = "EVENT.",cataleg_mana=T)
 
-
-#31.03.2022##
-
-
-dtagr_problemes_2018_EPIPEU_AP_HOSP5<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-                                        bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1_amp),
-                                        finestra.dies=c(-365,0),prefix = "GRUP365B.",cataleg_mana=T)
-
-
-#----------------------------------------------------------------------------------------------------#
-#05.04.2022#::
-#----------------------------------------------------------------------------------------------------#
-dtagr_problemes_2018_EPIPEU_AP_HOSP6<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-                                        bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg4,cod,agr=agr),
-                                        finestra.dies=c(-365,0),prefix = "DG.UEIPA.365.",cataleg_mana=T)
-#----------------------------------------------------------------------------------------------------#
-dtagr_problemes_2018_EPIPEU_AP_HOSP7<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-                                        bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg4,cod,agr=agr),
-                                        finestra.dies=c(-Inf,0),prefix = "DG.UEIPA.INF.",cataleg_mana=T)
-#----------------------------------------------------------------------------------------------------#
-#04.04.2022#
-dtagr_problemes_2018_EPIPEU_AP_HOSP8<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
-                                        bd.dindex = dt_index,
-                                        dt.agregadors=select(dt_cataleg4,cod,agr=agr),
-                                        finestra.dies=c(-Inf,-366),prefix = "DG.UEIPA.INF_365.",cataleg_mana=T)
-#----------------------------------------------------------------------------------------------------#
 
 
 gc()
@@ -433,21 +305,30 @@ Fusionar part dels arxius agregats
 
 dt_plana<-dt_index%>%
 left_join(dt_poblacio,by="idp")%>%
- left_join(dtagr_INCLUSIONS_2018_EPIPEU_AP_HOSP,by=c('idp','dtindex'))%>%
-  left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1a,by=c('idp','dtindex') )%>%
-   left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1b,by=c('idp','dtindex'))%>%
-    left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1c,by=c('idp','dtindex'))%>%
-     left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP1d,by=c('idp','dtindex'))%>%
-      left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2,by=c('idp','dtindex'))%>%
-       left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2b,by=c('idp','dtindex'))%>%
-        left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP3,by=c('idp','dtindex'))%>% 
-         left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP4,by=c('idp','dtindex'))%>% 
-          left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP5,by=c('idp','dtindex'))%>% 
-           left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP6,by=c('idp','dtindex'))%>% 
-            left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP7,by=c('idp','dtindex'))%>%
-             left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP8,by=c('idp','dtindex'))
+ left_join(dtagr_EPIPEU_Inclusio,by=c('idp','dtindex'))%>%
+  left_join(dtagr_EPIPEU_Diag1,by=c('idp','dtindex') )%>%
+   left_join(dtagr_EPIPEU_Diag2,by=c('idp','dtindex'))%>%
+    left_join(dtagr_EPIPEU_Diag3,by=c('idp','dtindex'))%>%
+     left_join(dtagr_EPIPEU_Diag4,by=c('idp','dtindex'))%>%
+      left_join(dtagr_EPIPEU_Event1,by=c('idp','dtindex'))%>%
+       left_join(dtagr_EPIPEU_Event2,by=c('idp','dtindex'))%>%
+        left_join(dtagr_EPIPEU_Event3,by=c('idp','dtindex'))%>%
+         left_join(dtagr_EPIPEU_Event4,by=c('idp','dtindex'))
+      
   
 
+  
+  
+#  left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2,by=c('idp','dtindex'))%>%
+#       left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2b,by=c('idp','dtindex'))%>%
+#        left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP3,by=c('idp','dtindex'))%>% 
+#         left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP4,by=c('idp','dtindex'))%>% 
+#          left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP5,by=c('idp','dtindex'))%>% 
+#           left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP6,by=c('idp','dtindex'))%>% 
+#            left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP7,by=c('idp','dtindex'))%>%
+#             left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP8,by=c('idp','dtindex'))
+  
+  
 ###########################################
 #
 # "DG.INF_365.AMPUTACIO_Ext_inferior" 
