@@ -77,7 +77,7 @@ dt_cataleg4<-dt_cataleg2%>% filter(domini=="farmacs_facturats")
 dt_plana<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part1.rds"))
 dt_diagnostics_AP_HOSP<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part2.rds"))
 dt_poblacio<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part3.rds"))
-
+dt_index<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part4.rds"))
 
 #dt_tabaquisme<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_tabaquisme_20200206_104913.rds")) %>% as_tibble()
 
@@ -116,7 +116,14 @@ gc()
 ## 6. PART 2
 
 ```{r}
-dt_index<-dt_plana %>% select(idp,dtindex)
+
+
+
+
+#dt_index<-dt_plana %>% select(idp,dtindex)
+
+
+
 
 ```
 
@@ -407,6 +414,9 @@ dt_parametres<-read_excel(here::here(conductor_codis),sheet = "parametres")
 
 
 dt_temp<-Generar_taula_plana(dt_index,cataleg = conductor_codis,parametres = dt_parametres)%>%select(-dtindex)
+
+#0017587dcbf5854535812a53909159ab55344472
+#20130604
 
 
 
