@@ -46,6 +46,7 @@ params:
 
 ```{r setup, include = FALSE}
 #rm(list=ls())
+
 library(dplyr)
 # Funcions 
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
@@ -66,6 +67,10 @@ dt_cataleg<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(cod,
 dt_cataleg2<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(domini,cod,DM2,agr0,agr,agr1,agr_Farmac,agr11,agr1_amp,agr_Niad,agr_Insul_Ado,agr_Comp_Vasc,agr_CVD,agr_Comp_Vasc2)
 
 dt_cataleg4<-dt_cataleg2%>% filter(domini=="farmacs_facturats")
+
+
+
+
 
 
 
@@ -214,7 +219,7 @@ gc()
 ```
 
 
-```{r agregacio_facturacio365, include=F}
+```{r agregacio_facturacio365, include=F,eval=FALSE}
 
 #02.4.2021
 
@@ -352,19 +357,29 @@ dtagr_EPIPEU.Tabac<-
 
 ```{r fusio,include=F}
 
+#dt_plana<-dt_plana %>% 
+#          left_join(dtagr_EPIPEU.Fact1,by=c('idp','dtindex'))%>%
+#           left_join(dtagr_EPIPEU.Fact2,by=c('idp','dtindex'))%>%
+#            left_join(dtagr_EPIPEU.Fact3,by=c('idp','dtindex'))%>%
+#             left_join(dtagr_EPIPEU.Fact4,by=c('idp','dtindex'))%>%
+#              left_join(dtagr_EPIPEU.Fact5,by=c('idp','dtindex'))%>%
+#               left_join(dtagr_EPIPEU.Fact6,by=c('idp','dtindex'))%>%
+#                left_join(dtagr_EPIPEU.Fact7,by=c('idp','dtindex'))%>%
+#                 left_join(dtagr_EPIPEU.Fact8,by=c('idp','dtindex'))%>%
+#                  left_join(dtagr_EPIPEU.analitic,by=c('idp','dtindex'))%>%
+#                   left_join(dtagr_EPIPEU.Tabac,by=c('idp','dtindex'))
+
+
 dt_plana<-dt_plana %>% 
-          left_join(dtagr_EPIPEU.Fact1,by=c('idp','dtindex'))%>%
-           left_join(dtagr_EPIPEU.Fact2,by=c('idp','dtindex'))%>%
-            left_join(dtagr_EPIPEU.Fact3,by=c('idp','dtindex'))%>%
-             left_join(dtagr_EPIPEU.Fact4,by=c('idp','dtindex'))%>%
-              left_join(dtagr_EPIPEU.Fact5,by=c('idp','dtindex'))%>%
-               left_join(dtagr_EPIPEU.Fact6,by=c('idp','dtindex'))%>%
-                left_join(dtagr_EPIPEU.Fact7,by=c('idp','dtindex'))%>%
-                 left_join(dtagr_EPIPEU.Fact8,by=c('idp','dtindex'))%>%
-                  left_join(dtagr_EPIPEU.analitic,by=c('idp','dtindex'))%>%
-                   left_join(dtagr_EPIPEU.Tabac,by=c('idp','dtindex'))
-
-
+  left_join(dtagr_EPIPEU.analitic,by=c('idp','dtindex'))%>%
+                 left_join(dtagr_EPIPEU.Tabac,by=c('idp','dtindex'))%>%
+                   left_join(dtagr_EPIPEU.Fact1,by=c('idp','dtindex'))%>%
+                      left_join(dtagr_EPIPEU.Fact2,by=c('idp','dtindex'))%>%
+                        left_join(dtagr_EPIPEU.Fact3,by=c('idp','dtindex'))%>%
+                           left_join(dtagr_EPIPEU.Fact4,by=c('idp','dtindex'))%>%
+                            left_join(dtagr_EPIPEU.Fact5,by=c('idp','dtindex'))
+                              
+                             
 
 
 # dt_plana<-dt_index%>%
@@ -406,25 +421,6 @@ dt_plana<-dt_plana %>%
 
 ```
 
-## 4. Fusion de datos[amb la gran FUNCIO.]
-```{r fusio2,include=F}
-
-
-dt_parametres<-read_excel(here::here(conductor_codis),sheet = "parametres")
-
-
-dt_temp<-Generar_taula_plana(dt_index,cataleg = conductor_codis,parametres = dt_parametres)%>%select(-dtindex)
-
-#0017587dcbf5854535812a53909159ab55344472
-#20130604
-
-
-
-dt_plana2<-dt_index%>%
-left_join(dt_poblacio,by="idp")%>%
- left_join(dt_temp,by=c('idp'))
-
-```
 
 ## 5. Errores de la B.D para corregir!
 ```{r errors_charcot, include=T}

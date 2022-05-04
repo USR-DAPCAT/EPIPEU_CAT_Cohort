@@ -80,6 +80,10 @@ dt_cataleg3<-dt_cataleg2%>% filter(domini=="diagnostics" |
                                      domini=="cmbdh_procediments" )
 
 
+#dt_cataleg3<-dt_cataleg2%>% filter(domini=="diagnostics")
+
+
+
 #30.03.2022
 dt_cataleg4<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(cod,agr)%>% filter(agr=="ULC_MI_CMBD" | 
                                                                                                 agr=="ULC_MI_CMBD_NE" |
@@ -316,8 +320,25 @@ left_join(dt_poblacio,by="idp")%>%
          left_join(dtagr_EPIPEU_Event4,by=c('idp','dtindex'))
       
   
+#variable.names(dt_temp2) %in% variable.names(dtagr_EPIPEU_Diag1)
 
-  
+#variable.names(dt_plana) %in% variable.names(dt_temp2)
+#30
+#length(dt_temp2)
+
+#27
+#length(dt_plana)
+
+#DG.DM2CMBD
+#DG.ULC_MI_CMBD            
+#DG.ULC_MI_CMBD_NE
+
+
+
+#DG.IQ_ART no surt!!!
+
+
+
   
 #  left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2,by=c('idp','dtindex'))%>%
 #       left_join(dtagr_problemes_2018_EPIPEU_AP_HOSP2b,by=c('idp','dtindex'))%>%
