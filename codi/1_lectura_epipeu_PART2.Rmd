@@ -219,7 +219,7 @@ gc()
 ```
 
 
-```{r agregacio_facturacio365, include=F,eval=FALSE}
+```{r agregacio_facturacio365, include=F}
 
 #02.4.2021
 

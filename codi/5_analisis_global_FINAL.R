@@ -1,4 +1,4 @@
-#02.05.2022
+#04.05.2022
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -41,6 +41,34 @@ rmarkdown::render(input="./codi/1_lectura_epipeu_PART2.Rmd",
                   output_file=paste0(here::here("outputs/Informe_Lectura2_FinalDM2_Juny_"),Sys.Date()),
                   params = list(dir_dades_desti=dir_dades_desti ,dir_dades_origen=dir_dades_origen))
 #--------------------------------------------------------------------------------------------------# 
+
+
+#--------------------------------------------------------------------------------------------------# 
+rm(list=ls())
+gc()
+mostra=T
+dir_dades_desti="dades" 
+dir_dades_origen="../DADES/EPIPEU_CAT3/dades" 
+if (mostra) {
+  dir_dades_origen="../../DADES/EPIPEU_CAT3/dades/mostra"
+  dir_dades_desti="dades/mostra" }
+#---------------------------- LECTURA -------------------------------------------------------------# 
+rmarkdown::render(input="./codi/1_Gran_Funcio.Rmd",
+                  output_file=paste0(here::here("outputs/Informe_GRAN_FUNCIO_"),Sys.Date()),
+                  params = list(dir_dades_desti=dir_dades_desti ,dir_dades_origen=dir_dades_origen))
+#--------------------------------------------------------------------------------------------------# 
+
+
+
+
+
+
+
+
+
+
+
+
 rm(list=ls())
 gc()
 mostra=T
