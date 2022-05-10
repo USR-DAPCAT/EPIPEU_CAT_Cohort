@@ -1,0 +1,388 @@
+---
+title: 'Epipeucat cohorte Longitudinal Retospectiva.Evento DFD.Fecha de corte:`r params$bd.dindex`'
+author: "Jordi Real & Rai Puig"
+website: "https://github.com/USR-DAPCAT/"
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+
+
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    fig_caption: true
+    css: logos_css/usr_styles.css
+  pdf_document: default
+  word_document: default
+
+params:
+  dir_dades_origen: "../../DADES/EPIPEU_CAT3/dades/mostra" # "../DADES/EPIPEU_CAT3/dades/mostra"
+  dir_dades_desti: "dades/mostra" # dades/mostra"  # dades 
+  bd.dindex1: '20060101'
+  bd.dindex2: '20181231'
+---
+
+
+&nbsp;
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"https://www.idiapjgol.org/images/logo.png\" style=\"float: right ;width: 130px;\"/>')
+     $head.prepend('<img src=\"https://avatars2.githubusercontent.com/u/57066591?s=200&v=4\" style=\"margin-left:25% ;width: 80px;\"/>')
+     $head.prepend('<img src=\"logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
+   });
+</script>
+
+
+
+<div class="watermark">DRAFT</div>
+
+
+
+
+# FASE LECTURA
+
+>> Generacion de tabla plana y aplicacion de los primeros criterios inclusion 
+
+```{r setup, include = FALSE}
+#rm(list=ls())
+library(dplyr)
+# Funcions 
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+
+#conductor_codis<-here::here("codis_peucat.xlsx")
+
+#[17.2.2021]
+conductor_codis<-here::here("CATALEG_PROYECTO_Manel.xlsx")
+directori_dades_origen<-params$dir_dades_origen
+
+
+
+dt_cataleg<-readxl::read_excel(conductor_codis,col_types = "text")%>%select(domini,cod,DM2,agr0,agr,agr1,agr_Farmac,agr11,agr1_amp,agr_Niad,agr_Insul_Ado,agr_Comp_Vasc,agr_CVD,agr_Comp_Vasc2)
+
+dt_cataleg3<-dt_cataleg%>% filter(domini=="diagnostics" | 
+                                   domini=="cmbdh_diagnostics" |
+                                     domini=="cmbdh_procediments" )
+
+
+
+
+```
+## 1. Lectura 
+```{r lectura, include=T}
+# 1 Lectura -----------
+dt_plana<-readRDS(here::here(params$dir_dades_desti,"dt_plana.rds"))
+
+#12.Xii.2020
+dt_diagnostics_HOSP<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_cmbdh_diagnostics_20200206_104913.rds")) %>% as_tibble()
+
+#26.xii.2020[2Entrega]
+dt_diagnostics_HOSP2<-data.table::fread(here::here(directori_dades_origen,"epiPEUCAT_PX_entregable_cmbdh_diagnostics_20210104_131331.txt"))%>%as_tibble()%>%select(-cingres)%>%select(idp,cod,dat,dx_pos,dalta,calta,id_ingres,origen,codificacio,agr)
+
+dt_diagnostics_HOSP<-dt_diagnostics_HOSP%>%
+  select(idp,cod,dat,agr)%>%
+  bind_rows(select(dt_diagnostics_HOSP2,idp,cod,dat,agr))
+
+dt_diagnostics_AP<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_diagnostics_20200206_104913.rds")) %>% as_tibble()
+dt_derivacions<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_derivacions_20200206_104913.rds")) %>% as_tibble()
+
+
+dt_procediments<-data.table::fread(here::here(directori_dades_origen,"epiPEUCAT_PX_entregable_cmbdh_procediments_20201211_095238.txt"))%>%
+  as_tibble()%>%select(idp,cod,dat,agr)
+
+
+#26.xii.2020[3Entrega]
+dt_procediments2<-data.table::fread(here::here(directori_dades_origen,"epiPEUCAT_PX_entregable_cmbdh_procediments_20210104_131331.txt"))%>%
+  as_tibble()%>%select(idp,cod,dat,agr)
+
+#
+
+# fer-ho dema 26.01.2021
+#
+#
+#i)   epiPEUCAT_PX_entregable_cmbdh_diagnostics_20210104_131331
+#ii)  epiPEUCAT_PX_entregable_cmbdh_procediments_20201211_095238
+#iii) epiPEUCAT_PX_entregable_cmbdh_procediments_20210104_131331
+
+# ho he fet 18.12.2020
+# Fusiono dt_diagnostics (E-CAP + Hospital1+Hospital2+Procediments )
+dt_diagnostics_AP_HOSP<-dt_diagnostics_AP%>%transmute(idp,cod=as.character(cod),dat,agr)%>%
+  bind_rows(select(dt_diagnostics_HOSP,idp,cod,dat,agr))%>%
+  bind_rows(dt_procediments)%>%bind_rows(dt_procediments2)
+
+#dt_diagnostics_AP_HOSP<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part2.rds"))
+
+
+dt_poblacio<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_poblacio_20200206_104913.rds")) %>% as_tibble()
+
+
+
+dt_index<-readRDS(here::here(params$dir_dades_desti,"dt_plana_part4.rds"))
+
+
+dt_tabaquisme<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_tabaquisme_20200206_104913.rds")) %>% as_tibble()
+
+dt_analitiques<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_variables_analitiques_20200206_104913.rds")) %>% as_tibble()
+
+dt_cliniques<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_variables_cliniques_20200206_104913.rds")) %>% as_tibble()
+# Fusiono cliniques + variables
+dt_variables<-dt_analitiques%>% bind_rows(dt_cliniques) %>% select(-agr) %>% 
+  left_join(select(dt_cataleg,cod,agr),by="cod") %>% 
+  select(-cod) %>% rename(cod=agr)
+
+dt_facturacio<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_farmacs_facturats_20200206_104913.rds")) %>% as_tibble()
+dtagr_facturacio<-dt_facturacio %>% transmute(idp,cod,dat,env)
+
+
+
+
+dt_index<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
+                                        bd.dindex =params$bd.dindex2 ,
+                                        dt.agregadors=select(dt_cataleg3,cod,agr=agr1_amp),
+                                        finestra.dies=c(-Inf,0),prefix = "DG.",cataleg_mana=T)
+
+dt_index<-dt_index %>%mutate(dtindex=DG.UEIPA) %>%select(idp,dtindex)
+
+
+
+
+
+```
+
+```{r loa gran funcio}
+
+Generar_taula_plana<-function(dt=dt_index,
+                              cataleg=dt_cataleg,
+                              parametres=dt_parametres,...) 
+{
+  
+  # dt=dt_dindex
+  # cataleg=here::here(fitxer_cataleg)
+  # parametres=dt_parametres
+  
+  # dt_dindex %>% select(idp,dtindex),
+  # cataleg = here::here("Cataleg_DAPRET.xls")
+  # parametres=here::here("Cataleg_DAPRET.xls")
+
+  cataleg<-read_conductor(cataleg)
+  parametres<-read_conductor(parametres,...) %>% filter(!(is.na(fitxer)| is.na(domini)))
+  # parametres<-read_conductor(parametres,sheet="parametres")
+
+  # Llegeixo parametres
+  # Agrego problemes de salut
+  # Capturar: Dades, finestra, camp_agregador i prefix, filtrar cataleg
+  
+  # Depurar parametres ---------------------------------
+  # en funció de la existencia dels fitxers si no existeixen -----
+  exist_file<-parametres$fitxer %>% set_names(parametres$fitxer) %>% 
+    map(~exists(.x)) %>% map(~as.integer(.x)) %>% 
+    unlist() %>% as_tibble()
+  parametres<-parametres %>% bind_cols(exist_file) %>% rename("exist"=value)
+  
+  arxius_inexistens<-parametres %>% filter(exist==0) %>% pull(fitxer) %>% unique()
+  # Warning
+  if (nrow(parametres %>% filter(exist==0))>0) { warning(paste0("No existeixen alguns fitxers:", paste0(arxius_inexistens,collapse = ", ")))}
+  # filtro parametres logics
+  parametres<-parametres %>% filter(exist==1)
+  
+  
+  # PROBLEMES  ---------------------------------
+  # Seleccionar parametres i cataleg
+  par_problemes<-
+    parametres %>% filter(domini=="diagnostics") 
+  
+  if (nrow(par_problemes)>0) {
+    
+
+    cat_problemes <-cataleg %>% filter(domini%in% c("diagnostics","cmbdh","cmbdh_diag","cmbdh_procediments","cmbdh_diagnostics","cmbdh_procediments_cim10scp") )
+
+    # Generar dades historic en funció del nom fitxer
+    nom_fitxer<-  par_problemes %>% distinct(fitxer) %>% pull() 
+    nom_fitxer<-set_names(nom_fitxer,nom_fitxer)
+    dt_historic<-nom_fitxer %>% map_df(~eval(sym(.x)),.id="nom_fitxer") %>% semi_join(dt,by="idp") %>% select(nom_fitxer,idp,cod,dat)
+    
+    # Generar agregacions problemes segons llista de parametres
+    DTAGR_PROBLEMES<-
+      pmap(transmute(par_problemes,fitxer,as.numeric(Finestra1),as.numeric(Finestra2),prefix,camp),    
+           
+           ~agregar_problemes(
+             dt=dt_historic %>% filter(nom_fitxer==..1),
+             bd.dindex=dt,
+             dt.agregadors=cat_problemes,
+             finestra.dies=c(..2,..3),
+             prefix=..4,
+             camp_agregador=..5,
+             cataleg_mana=T)
+      ) %>% 
+      reduce(full_join,by=c("idp","dtindex"))   # Juntar-ho tot
+    
+  } else DTAGR_PROBLEMES<-dt
+  
+
+  # FARMACS FACTURATS -------------------------------
+  # Seleccionar parametres i cataleg
+  par_farmacs<-
+
+  parametres %>% filter(domini%in% c("farmacs","farmacs_facturats"))
+  # Només passar si en parametres existeix
+  if (nrow(par_farmacs)>0) {
+    
+    # Cataleg
+    cat_farmacs <-cataleg %>% filter(domini%in% c("farmacs_facturats","farmacs","farmacs_prescrits"))
+    
+    # Generar dades historic en funció del nom fitxer
+    nom_fitxer<-  par_farmacs %>% distinct(fitxer) %>% pull() 
+    nom_fitxer<-set_names(nom_fitxer,nom_fitxer)
+    
+    
+    dt_historic<-nom_fitxer %>% map_df(~eval(sym(.x)),.id="nom_fitxer") %>% semi_join(dt,by="idp")
+    
+    # 
+    DTAGR_FARMACS<-
+      pmap(transmute(par_farmacs,fitxer,as.numeric(Finestra1),as.numeric(Finestra2),prefix,camp),
+           
+           ~agregar_facturacio(
+             dt_historic %>% select(idp,cod,dat,env) %>% filter(nom_fitxer==..1),
+             bd.dindex=dt,
+             finestra.dies=c(..2,..3),
+             dt.agregadors=cat_farmacs,
+             prefix=..4,
+             camp_agregador=..5,
+             agregar_data=F,
+             cataleg_mana = T) 
+      ) %>% 
+      reduce(full_join,by=c("idp","dtindex")) %>%  # Juntar-ho tot
+      mutate(dtindex=data.to.string(dtindex) %>% as.integer)
+    
+  } else DTAGR_FARMACS<-dt
+  
+  # FARMACS PRESCRITS  -------------------------------
+  # Seleccionar parametres i cataleg
+  par_farmacs<-
+
+    parametres %>% filter(domini %in% c("farmacs_prescrits","prescrits"))
+
+  # Només passar si en parametres existeix
+  if (nrow(par_farmacs)>0) {
+    
+    # Cataleg
+    cat_farmacs <-cataleg %>% filter(domini%in% c("farmacs_facturats","farmacs","farmacs_prescrits"))
+    
+    # Generar dades historic en funció del nom fitxer
+    nom_fitxer<-  par_farmacs %>% distinct(fitxer) %>% pull() 
+    nom_fitxer<-set_names(nom_fitxer,nom_fitxer)
+    
+    dt_historic<-nom_fitxer %>% map_df(~eval(sym(.x)),.id="nom_fitxer") %>% semi_join(dt,by="idp")
+    
+    # 
+    DTAGR_FARMACS_PR<-
+      pmap(transmute(par_farmacs,fitxer,as.numeric(Finestra1),as.numeric(Finestra2),prefix,camp),
+           
+           ~agregar_prescripcions(
+             dt_historic %>% select(idp,cod,dat,dbaixa) %>% filter(nom_fitxer==..1),
+             bd.dindex=dt,
+             finestra.dies=c(..2,..3),
+             dt.agregadors=cat_farmacs,
+             prefix=..4,
+             camp_agregador=..5,
+             agregar_data=F,
+             cataleg_mana = T) 
+      ) %>% 
+      reduce(full_join,by=c("idp","dtindex")) %>%  # Juntar-ho tot
+      mutate(dtindex=data.to.string(dtindex) %>% as.integer)
+    
+  } else DTAGR_FARMACS_PR<-dt
+  
+  
+  # ANALITIQUES  -------
+  par_analit<-
+    parametres %>% filter(domini=="analitiques") 
+  
+  if (nrow(par_analit)>0) {
+    
+    # Generar dades historic en funció del nom fitxer
+    nom_fitxer<-  par_analit %>% distinct(fitxer) %>% pull() 
+    
+    nom_fitxer<-set_names(nom_fitxer,nom_fitxer)
+    dt_historic<-nom_fitxer %>% map_df(~eval(sym(.x)),.id="nom_fitxer") %>% semi_join(dt,by="idp") 
+    
+    DTAGR_ANALITIQUES<-
+      pmap(
+        
+        transmute(par_analit,
+                  fitxer,as.numeric(Finestra1),as.numeric(Finestra2),prefix,funcio,camp),
+        
+        ~ agregar_analitiques(dt_historic %>% filter(nom_fitxer==..1),
+                              bd.dindex = dt,
+                              finestra.dies = c(..2,..3),
+                              sufix = c(..4,".dies"),
+                              fun=..5,
+                              camp=..6)
+        
+      ) %>% 
+      
+      reduce(full_join,by=c("idp","dtindex")) %>%  # Juntar-ho tot
+      mutate(dtindex=lubridate::as_date(dtindex) %>% data.to.string %>% as.integer)
+    
+  } else DTAGR_ANALITIQUES<-dt 
+  
+  # Finalment: juntar-ho tot
+  #
+  
+  dt %>% 
+    left_join(DTAGR_PROBLEMES,by=c("idp","dtindex")) %>% 
+    left_join(DTAGR_FARMACS,by=c("idp","dtindex")) %>% 
+    left_join(DTAGR_FARMACS_PR,by=c("idp","dtindex")) %>% 
+    left_join(DTAGR_ANALITIQUES,by=c("idp","dtindex"))
+  
+}
+
+
+
+
+
+```
+
+
+
+
+
+## 4. Fusion de datos[amb la gran FUNCIO.]
+```{r fusio2,include=T}
+
+
+
+
+
+dt_parametres<-read_excel(here::here(conductor_codis),sheet = "parametres")
+
+
+dt_temp<-Generar_taula_plana(dt_index,cataleg = conductor_codis,parametres = dt_parametres)%>%
+  select(-dtindex)
+
+
+dt_poblacio<-
+  dt_poblacio  %>%
+  filter(entrada>=params$bd.dindex1 & sortida<=params$bd.dindex2)  
+
+
+
+dt_plana2<-dt_index%>%
+left_join(dt_poblacio,by="idp")%>%
+ left_join(dt_temp,by=c('idp'))
+
+
+#[]
+
+variable.names(dt_plana2) %in% variable.names(dt_plana)
+
+#N==74
+length(dt_plana2)
+
+
+#N==74
+length(dt_plana)
+
+```
