@@ -944,48 +944,48 @@ dt_plana<-dt_plana%>% mutate(Sin_Tratamiento=case_when(count_Antidiabeticos==0~1
 
 
 
-dt_plana<-dt_plana%>%mutate(count_NIAD_ADO_365=(  F365.Biguanidas+
-                                                  F365.Sulfonilureas+
-                                                  F365.Glinides+
-                                                  F365.Tiazolidinadiones+
-                                                  F365.ISGLT2+
-                                                  F365.IDPP4+
-                                                  F365.OtrAntidiabOrales+
-                                                  F365.InAlfaGluc+
-                                                  F365.aGLP1))
+#dt_plana<-dt_plana%>%mutate(count_NIAD_ADO_365=(  F365.Biguanidas+
+#                                                  F365.Sulfonilureas+
+#                                                  F365.Glinides+
+#                                                  F365.Tiazolidinadiones+
+#                                                  F365.ISGLT2+
+#                                                  F365.IDPP4+
+#                                                  F365.OtrAntidiabOrales+
+#                                                  F365.InAlfaGluc+
+#                                                  F365.aGLP1))
                                                 
 
 
 #
 
 #table(dt_plana$count_NIAD)
-dt_plana<-dt_plana%>% mutate(count_NIAD_ADO_CAT_365=case_when(
-                                                      count_NIAD_ADO_365==0 & F365.Insul==0 ~0,
-                                                      count_NIAD_ADO_365==1 & F365.Insul==0~ 1,
-                                                      count_NIAD_ADO_365==2 & F365.Insul==0~ 2,
-                                                      count_NIAD_ADO_365>=3 & F365.Insul==0~ 3,
-                                                      count_NIAD_ADO_365==0 & F365.Insul==1~ 4,
-                                                      count_NIAD_ADO_365>=1 & F365.Insul==1~ 5))
+#dt_plana<-dt_plana%>% mutate(count_NIAD_ADO_CAT_365=case_when(
+#                                                      count_NIAD_ADO_365==0 & F365.Insul==0 ~0,
+#                                                      count_NIAD_ADO_365==1 & F365.Insul==0~ 1,
+#                                                      count_NIAD_ADO_365==2 & F365.Insul==0~ 2,
+#                                                      count_NIAD_ADO_365>=3 & F365.Insul==0~ 3,
+#                                                      count_NIAD_ADO_365==0 & F365.Insul==1~ 4,
+#                                                      count_NIAD_ADO_365>=1 & F365.Insul==1~ 5))
 
 
 
-dt_plana<-dt_plana%>% mutate(INSUL_365=F365.Insul)
+#dt_plana<-dt_plana%>% mutate(INSUL_365=F365.Insul)
 
 
 
-dt_plana<-dt_plana%>%mutate(count_Antidiabeticos_365=F365.Biguanidas+
-                              F365.Sulfonilureas+
-                              F365.Glinides+
-                              F365.Tiazolidinadiones+
-                              F365.ISGLT2+
-                              F365.IDPP4+
-                              F365.OtrAntidiabOrales+
-                              F365.InAlfaGluc+
-                              F365.aGLP1+F365.Insul)
+#dt_plana<-dt_plana%>%mutate(count_Antidiabeticos_365=F365.Biguanidas+
+#                              F365.Sulfonilureas+
+#                              F365.Glinides+
+#                              F365.Tiazolidinadiones+
+#                              F365.ISGLT2+
+#                              F365.IDPP4+
+#                              F365.OtrAntidiabOrales+
+#                              F365.InAlfaGluc+
+#                              F365.aGLP1+F365.Insul)
  
 
 
-dt_plana<-dt_plana%>% mutate(count_Antidiabeticos_CAT_365=case_when(count_Antidiabeticos_365==0~0,count_Antidiabeticos_365>=1~ 1))
+#dt_plana<-dt_plana%>% mutate(count_Antidiabeticos_CAT_365=case_when(count_Antidiabeticos_365==0~0,count_Antidiabeticos_365>=1~ 1))
 
 
 
