@@ -165,7 +165,7 @@ dt_variables<-dt_analitiques%>% bind_rows(dt_cliniques) %>% select(-agr) %>%
 
 dt_facturacio<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_farmacs_facturats_20200206_104913.rds")) %>% as_tibble()
 
-dtagr_facturacio<-dt_facturacio %>% transmute(idp,cod,dat,env)%>% 
+dt_facturacio<-dt_facturacio %>% transmute(idp,cod,dat,env)%>% 
   semi_join(dt_index,by="idp")
 
 
