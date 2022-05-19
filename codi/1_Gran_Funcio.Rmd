@@ -120,9 +120,6 @@ dt_diagnostics_AP_HOSP<-dt_diagnostics_AP%>%transmute(idp,cod=as.character(cod),
 ## 1. Generar DataIndex
 ```{r DataIndex, include=T}
 
-
-
-
 dt_index<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
                                         bd.dindex =params$bd.dindex2 ,
                                         dt.agregadors=select(dt_cataleg3,cod,agr=agr1_amp),
@@ -133,7 +130,6 @@ dt_index<-dt_index %>%mutate(dtindex=DG.UEIPA) %>%select(idp,dtindex)
 
 dt_diagnostics_AP_HOSP<-dt_diagnostics_AP_HOSP%>% 
   semi_join(dt_index,by="idp")
-
 
 
 ```
