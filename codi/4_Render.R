@@ -28,7 +28,7 @@ data_final='20181231'
 
 
 #---------------------------- LECTURA -------------------------------------------------------------# 
-rmarkdown::render(input="./codi/1_Gran_Funcio.Rmd",
+rmarkdown::render(input="./codi/1_lectura.Rmd",
                   output_file=paste0(here::here("outputs/Informe_Lectura_Gran_Funcio_"),Sys.Date()),
                   params = list(dir_dades_desti=dir_dades_desti ,
                                 dir_dades_origen=dir_dades_origen,
