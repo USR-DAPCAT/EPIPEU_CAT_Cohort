@@ -1,4 +1,4 @@
-#19.05.2022
+#25.05.2022
 
 
 #epiPEUCAT cohorte longitudinal retrospectiva, es coger casos DFD mirar el primer episodio y ver diferentes eventos

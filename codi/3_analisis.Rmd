@@ -93,9 +93,9 @@ params:
 &check; Revision y depuracion de errores.   <br/>
 &check; Modelos multivariables.   <br/>
 
-# Fase de validacion de base
 
-## Fase Preparacion
+
+## Fase Preparacio: cataleg+conductor+link_funcions
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, include=F,size="huge")
@@ -109,11 +109,6 @@ gc()
 library("dplyr")
 library("lubridate")
 library("compareGroups")
-#
-source(here::here("codi/Flowchart_Box_Final2.r"))
-source(here::here("codi/criteris_exclusio_diagrama2.r"))
-#
-#
 
 
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
@@ -132,19 +127,17 @@ conductor<-here::here("conductor_Epipeu.xlsx")
 
 dades<-readRDS(here::here(params$dir_dades,"dt_plana2.rds")) %>% as_tibble()
 
-
-#dades<-dades%>%filter(stringr::str_sub(dtindex,1,4)==params$ANY)
-
-
 ```
 
 
-## Etiquetar
+## Etiquetar_valors_conductor+recodificacions_conductor+missings_conductor+factoritzar.NO.SI
 ```{r etiquetes}
 
+dades<-dades%>%mutate(exclusio1=ifelse(INCLUSIO.DM2==1,0,1))
+dades<-dades%>%mutate(exclusio2=ifelse(age<18,1,0))
+dades<-dades%>%mutate(exclusio3=ifelse(dtindex==sortida & situacio!="A",1,0))
 
-
-
+dades<-mutate_at(dades, vars( starts_with("exclusio") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
 
 #Recodificar automaticament a partir del Conductor!
@@ -159,11 +152,14 @@ dades<-factoritzar.NO.SI(dades,"factor",conductor)
 dades<-etiquetar_valors(dt=dades,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta1")
 
 
+#Apliquem que surtin els MISSINGS a les TAULES , a partir del CONDUCTOR!
+dades<-dades%>%mutate_at(extreure.variables("missings",conductor,dt=dades),as.factor)
+
 
 
 ```
 
-## 1. Flow chart 
+## 1. Flow chart + Etiquetar_Nom_Variables_conductor
 ```{r Flow chart, include=T}
 
 
@@ -188,28 +184,11 @@ flow_chart1<-criteris_exclusio_diagrama(dt=dades,
 flow_chart1
 
 
-#flow_chart2<-criteris_exclusio_diagrama2(dt=dt_plana,
-#                                         taulavariables=conductor,
-#                                         criteris = "exc_pre",
-#                                         ordre="exc_ordre",
-#                                         grups=NA,
-#                                      etiquetes="descripcio",
-#                                         sequencial = T,
-#                                         pob_lab=c("Muestra epiPEUCAT DM2 ","Muestra epiPEUCAT DM2 sin exclusiones"),
-#                                         colors=c("white","grey"),
-#                                         POB=459331 ,
-#                                         POB_LAB="SIDIAP:La poblacion de pacientes con DM2 de 2017 aprox: ")
-
-
-#flow_chart2
 
 
 #Apliquem les EXCLUSIONS!
 dades<-criteris_exclusio(dades,taulavariables=conductor,criteris="exc_pre")
 
-
-#Apliquem que surtin els MISSINGS a les TAULES , a partir del CONDUCTOR!
-dades<-dades%>%mutate_at(extreure.variables("missings",conductor,dt=dades),as.factor)
 
 #Etquetem  NOMS! de les  VAR  a partir del Conductor!
 dades<-etiquetar(dades,taulavariables=conductor)
@@ -220,31 +199,9 @@ dades<-etiquetar(dades,taulavariables=conductor)
 
 ```
 ## 2. Descriptiva Exploratoria General. Todas las variables.
-```{r resultats0, include=T}
 
-#i)
-#formula_Taula00<-formula.text("Taula00",y="",taulavariables = conductor,dt=dt_plana_exc)
-
-
-```
 
 ```{r resultats1, include=T}
-
-#Part1
-#i)
-#descrTable(formula_Taula00,
-#           method =2,
-#           Q1 = 0, 
-#           Q3 = 1,
-#           data=dt_plana_exc,
-#           include.miss = TRUE,
-#           max.xlev = 200, 
-#           show.p.overall=FALSE,
-#           show.n = T,
-#          hide.no="No",simplify=F)%>%export2md(header.background = "grey", header.color = "white", size=12,caption = "Descriptiva GENERAL 1 :[Frecuencia,Mediana,Min,Max]")
-#
-#
-
 
 
 descrTable(~., dades,method = 2,Q1=0,Q3=1,extra.labels = c("","","")) %>% export2md()
