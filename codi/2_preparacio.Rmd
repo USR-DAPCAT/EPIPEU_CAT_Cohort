@@ -65,9 +65,12 @@ dt_plana<-readRDS(here::here(params$dir_dades_desti,"dt_plana.rds")) %>% as_tibb
 # Convertim les variables categòriques  Na o 0 --> 0, la resta 1  !!!!! ( no hi haurà missings!!)
 
 dt_plana<-mutate_at(dt_plana, vars( starts_with("INCLUSIO.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
+
 dt_plana<-mutate_at(dt_plana, vars( starts_with("DG.") ), funs( if_else(.==0  |  is.na(.)  ,0,1)))
 dt_plana<-mutate_at(dt_plana, vars( starts_with("EVENT.") ), funs( if_else(.==0  |  is.na(.)  ,0,1)))
+
 dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
+dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
 
 ```
