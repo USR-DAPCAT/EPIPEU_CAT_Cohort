@@ -136,17 +136,18 @@ dades<-readRDS(here::here(params$dir_dades,"dt_plana2.rds")) %>% as_tibble()
 dades<-dades%>%mutate(exclusio1=ifelse(INCLUSIO.DM2==1,0,1))
 dades<-dades%>%mutate(exclusio2=ifelse(age<18,1,0))
 dades<-dades%>%mutate(exclusio3=ifelse(dtindex==sortida & situacio!="A",1,0))
-
 dades<-mutate_at(dades, vars( starts_with("exclusio") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
-
 #Recodificar automaticament a partir del Conductor!
-#dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
+dades<-recodificar(dades,taulavariables =conductor,"recode",missings = T)
 
 #Etquetem (Si/No)  a partir del Conductor!
-dades<-factoritzar.NO.SI(dades,"factor",conductor)
-
-# FF.Hipotensores_ARA\r\n    FF.Hipotensores_IECA \r\n   FF.Hipolipemiantes_FIB\r\n   FF.Hipolipemiantes_EZE\r\n 
+dades<- dades %>% mutate_at(vars(starts_with("DG.")), ~if_else(.==1,"Yes","No",missing = "No")) 
+dades<- dades %>% mutate_at(vars(starts_with("EVENT.")), ~if_else(.==1,"Yes","No",missing = "No")) 
+dades<- dades %>% mutate_at(vars(starts_with("FF.")), ~if_else(.==1,"Yes","No",missing = "No")) 
+dades<- dades %>% mutate_at(vars(starts_with("FP.")), ~if_else(.==1,"Yes","No",missing = "No")) 
+#Etquetem (Si/No)  a partir del Conductor!
+#dades<-factoritzar.NO.SI(dades,"factor",conductor)
 
 #Etquetem  VALORS! de les VAR  a partir del Conductor!
 dades<-etiquetar_valors(dt=dades,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta1")

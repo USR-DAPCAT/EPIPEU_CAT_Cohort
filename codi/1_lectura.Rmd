@@ -117,15 +117,15 @@ dt_index<-agregar_problemes(select(dt_diagnostics_AP_HOSP,idp,cod,dat),
 dt_index<-dt_index %>%mutate(dtindex=DG.UEIPA) %>%select(idp,dtindex)
 
 
-dt_diagnostics_AP_HOSP<-dt_diagnostics_AP_HOSP%>% 
-  semi_join(dt_index,by="idp")
-
 
 ```
 
 ## 3. Lectura posterior DataIndex
 ```{r lectura2, include=T}
 
+
+dt_diagnostics_AP_HOSP<-dt_diagnostics_AP_HOSP%>% 
+  semi_join(dt_index,by="idp")
 
 
 dt_poblacio<-readRDS(here::here(directori_dades_origen,"epiPEUCAT_entregable_poblacio_20200206_104913.rds")) %>% as_tibble()%>% 
