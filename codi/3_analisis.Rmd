@@ -472,11 +472,6 @@ study_consort %>%
 #study_consort
 
 
-
-
-
-
-
 #
 #
 #
@@ -798,12 +793,6 @@ study_consort %>%
 
 
 #study_consort
-
-
-
-
-
-
 
 #
 #
@@ -1200,7 +1189,7 @@ diagrama_Consort<-function(dt=dades,EXCLUSIONS=K1,TITOL="LALA",TRACT="FF.HTA",GR
  else if ( nEXC==4) {diagrama_Consort4(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
  else if ( nEXC==5) {diagrama_Consort5(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}  
  else if ( nEXC>5 ) {print("Flow-chart menys de 6 Exclusions")}
- else if  (  nEXC==0 )  {print("Possible Error, nop hi ha EXCLUSIONS!")}
+ else if  (  nEXC==0 )  {print("Possible Error, NO HI HA EXCLUSIONS!")}
   
   
 
@@ -1208,38 +1197,36 @@ diagrama_Consort<-function(dt=dades,EXCLUSIONS=K1,TITOL="LALA",TRACT="FF.HTA",GR
 
 
 
-
-
 POB_LAB=c("epiPEUCAT DM2","epiPEUCAT DM2 SIN EXCLUS")
 EXC=c("exclusio1")
 EXC_LAB=c("A")
-P1a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="BURRO",TRACT="FF.HTA",GRUP2=FALSE)
-P1b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="BURRO",TRACT="FF.HTA",GRUP2=TRUE)
+P1a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="HOLA COCA-COLA 1 exclusio",TRACT="FF.HTA",GRUP2=FALSE)
+P1b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="HOLA COCA-COLA 1 exclusio",TRACT="FF.HTA",GRUP2=TRUE)
 
 
 
 EXC=c("exclusio1","exclusio2")
 EXC_LAB=c("A","B")
-P2a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="BURRO",TRACT="FF.HTA",GRUP2=FALSE)
-P2b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="BURRO",TRACT="FF.HTA",GRUP2=TRUE)
+P2a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="HOLA COLA-CAU 2 exclusions",TRACT="FF.HTA",GRUP2=FALSE)
+P2b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL="HOLA COLA-CAU 2 exclusions",TRACT="FF.HTA",GRUP2=TRUE)
 
 
 EXC=c("exclusio1","exclusio2","exclusio3")
 EXC_LAB=c("A","B","C")
-P3a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=FALSE)
-P3b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=TRUE)
+P3a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "ADEU COCA-COLA 3 exclusions",TRACT="FF.HTA",GRUP2=FALSE)
+P3b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "ADEU COCA-COLA 3 exclusions",TRACT="FF.HTA",GRUP2=TRUE)
 
 
 
 EXC=c("exclusio1","exclusio2","exclusio3","exclusio4")
 EXC_LAB=c("A","B","C","D")
-P4a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=FALSE)
-P4b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=TRUE)
+P4a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "ADEU COLA-CAU 4 exclusions",TRACT="FF.HTA",GRUP2=FALSE)
+P4b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "ADEU COLA-CAU 4 exclusions",TRACT="FF.HTA",GRUP2=TRUE)
 
 EXC=c("exclusio1","exclusio2","exclusio3","exclusio4","exclusio5")
 EXC_LAB=c("A","B","C","D","E")
-P5a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=FALSE)
-P5b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=TRUE)
+P5a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "HOLA HOLA 5 exclusions",TRACT="FF.HTA",GRUP2=FALSE)
+P5b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "ADEU ADEU 5 exclusions",TRACT="FF.HTA",GRUP2=TRUE)
 
 EXC=c("exclusio7")
 EXC_LAB=c("A","B","C","D","E")
