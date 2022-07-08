@@ -1232,10 +1232,6 @@ EXC=c("exclusio7")
 EXC_LAB=c("A","B","C","D","E")
 P6<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC)
 
-EXC=c("exclusio1")
-EXC_LAB=c("COLA-CAU")
-P7<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC)
-
 
 
 
@@ -1256,7 +1252,7 @@ P5a
 P5b
 
 P6
-P7
+
 
 
 
