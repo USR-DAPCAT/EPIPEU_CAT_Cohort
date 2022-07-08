@@ -167,8 +167,8 @@ dades<-dades%>%mutate_at(extreure.variables("missings",conductor,dt=dades),as.fa
 
 ```
 
-## 1. Flow chart + Etiquetar_Nom_Variables_conductor
-```{r Flow chart, include=T}
+## 1a. Flow chart CONSORT
+```{r Flow chart_CONSORT, include=T}
 
 
 #07.07.2022: 
@@ -322,12 +322,7 @@ study_consort %>%
 #part 2
 
 
-
-
-
-
-
-#07.07.2022: 
+#08.07.2022: 
 ################################################
 #devtools::install_github("tgerke/ggconsort")
 ################################################
@@ -376,9 +371,6 @@ study_cohorts <-
     
     
     ) %>%
-  
-  
-  
   
   
   # Provide text labels for cohorts ---------------------------
@@ -464,13 +456,6 @@ study_consort <- study_cohorts %>%
 }
 
  
-
-
-
-
-
-
-
 #fer-ho més maco!!
 
 study_consort %>%
@@ -503,11 +488,7 @@ study_consort %>%
 
 
 
-
-
-
-
-diagrama_Consort2b<-function(dt=dades,TITOL="kk",TRACT="FF.HTA",GRUP2=TRUE)
+diagrama_Consort2<-function(dt=dades,TITOL="kk",TRACT="FF.HTA",GRUP2=TRUE)
   {
 
 TRACT_sym<-sym(TRACT)
@@ -627,11 +608,6 @@ study_consort <- study_cohorts %>%
 }
 
  
-
-
-
-
-
 #fer-ho més maco!!
 
 study_consort %>%
@@ -649,10 +625,6 @@ study_consort %>%
 
 
 
-
-
-
-
 #
 #
 #
@@ -663,25 +635,7 @@ study_consort %>%
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-diagrama_Consort3b<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
+diagrama_Consort3<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
   {
 
   
@@ -781,9 +735,6 @@ study_consort <- study_cohorts %>%
   #  end = "arm_b", end_side = "top", start_x = 30, start_y = 20)
   
 
-
-
- 
   
 
 if (GRUP2)  {  
@@ -833,10 +784,6 @@ study_consort <- study_cohorts %>%
 
  
 
-
-
-
-
 #fer-ho més maco!!
 
 study_consort %>%
@@ -872,15 +819,7 @@ study_consort %>%
 
 
 
-
-
-
-
-
-
-
-
-diagrama_Consort4b<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
+diagrama_Consort4<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
   {
 
   
@@ -985,11 +924,6 @@ study_consort <- study_cohorts %>%
   #  end = "arm_b", end_side = "top", start_x = 30, start_y = 20)
   
 
-
-
- 
-  
-
 if (GRUP2)  {  
 
 study_consort <- study_cohorts %>%
@@ -1037,11 +971,6 @@ study_consort <- study_cohorts %>%
 
 }
 
- 
-
-
-
-
 
 #fer-ho més maco!!
 
@@ -1058,12 +987,6 @@ study_consort %>%
 
 #study_consort
 
-
-
-
-
-
-
 #
 #
 #
@@ -1078,7 +1001,7 @@ study_consort %>%
 
 
 
-diagrama_Consort5b<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
+diagrama_Consort5<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
   {
 
   
@@ -1238,12 +1161,6 @@ study_consort <- study_cohorts %>%
 
 }
 
- 
-
-
-
-
-
 #fer-ho més maco!!
 
 study_consort %>%
@@ -1258,12 +1175,6 @@ study_consort %>%
 
 
 #study_consort
-
-
-
-
-
-
 
 #
 #
@@ -1283,11 +1194,11 @@ diagrama_Consort<-function(dt=dades,EXCLUSIONS=K1,TITOL="LALA",TRACT="FF.HTA",GR
   K2=(EXCLUSIONS%in%colnames(dt))
   nEXC=length(K2[K2== TRUE])
 
- if ( nEXC==1) {diagrama_Consort1b(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
- else if ( nEXC==2) {diagrama_Consort2b(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
- else if ( nEXC==3) {diagrama_Consort3b(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
- else if ( nEXC==4) {diagrama_Consort4b(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
- else if ( nEXC==5) {diagrama_Consort5b(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}  
+ if ( nEXC==1) {diagrama_Consort1(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
+ else if ( nEXC==2) {diagrama_Consort2(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
+ else if ( nEXC==3) {diagrama_Consort3(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
+ else if ( nEXC==4) {diagrama_Consort4(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}
+ else if ( nEXC==5) {diagrama_Consort5(dt=dades,TITOL=TITOL,TRACT=TRACT,GRUP2=GRUP2)}  
  else if ( nEXC>5 ) {print("Flow-chart menys de 6 Exclusions")}
  else if  (  nEXC==0 )  {print("Possible Error, nop hi ha EXCLUSIONS!")}
   
@@ -1330,10 +1241,6 @@ EXC_LAB=c("A","B","C","D","E")
 P5a<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=FALSE)
 P5b<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC,TITOL = "KKK",TRACT="FF.HTA",GRUP2=TRUE)
 
-
-
-
-
 EXC=c("exclusio7")
 EXC_LAB=c("A","B","C","D","E")
 P6<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC)
@@ -1341,6 +1248,10 @@ P6<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC)
 EXC=c("exclusio1")
 EXC_LAB=c("COLA-CAU")
 P7<-diagrama_Consort(dt=dades,EXCLUSIONS=EXC)
+
+
+
+
 
 P1a
 P1b
@@ -1361,6 +1272,14 @@ P6
 P7
 
 
+
+
+
+
+
+```
+## 1b. Flow chart + Etiquetar_Nom_Variables_conductor
+```{r Flow chart, include=T}
 
 #13.11.2020
 
@@ -1392,8 +1311,8 @@ dades<-etiquetar(dades,taulavariables=conductor)
 
 
 
-
 ```
+
 ## 2. Descriptiva Exploratoria General. Todas las variables.
 
 
