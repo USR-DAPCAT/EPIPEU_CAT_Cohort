@@ -358,7 +358,7 @@ LAB=c("A","B","C","D","E")
 
 
 
-diagrama_Consort1<-function(dt=dades,TITOL="PUTA")
+diagrama_Consort1<-function(dt=dades,TITOL="ggg")
   {
 
 
@@ -459,6 +459,122 @@ study_consort %>%
 
 
 
+diagrama_Consort1b<-function(dt=dades,TITOL="ll",TRACT="FF.HTA",GRUP2=TRUE)
+  {
+
+  TRACT_sym<-sym(TRACT)
+
+#dt=dades
+  
+study_cohorts <- 
+  dt %>%
+  cohort_start(POB_LAB[[1]]) %>%
+  # Define cohorts using named expressions --------------------
+  # [[Definir cohorts utilitzant expressions amb nom]]
+
+  # Notice that you can use previously defined cohorts in subsequent steps
+  # [[Tingueu en compte que podeu utilitzar cohorts definides prèviament en passos posteriors]]
+
+
+  cohort_define(
+    exclusio1 = .full %>% filter(exclusio1 != 1),
+    
+    
+    
+  # anti_join is useful for counting exclusions -------------
+  # [[anti_join és útil per comptar les exclusions]]  
+    exclusio = anti_join(.full,  exclusio1, by = "idp"),
+    exclusio1b = anti_join(.full, exclusio1, by = "idp"),
+   
+    
+    
+    ) %>%
+  
+  
+  
+  
+  
+  # Provide text labels for cohorts ---------------------------
+  # [[Proporcioneu etiquetes de text per a les cohorts]] 
+  cohort_label(
+    exclusio="EXCLUSIONS",
+    exclusio1b=EXC_LAB[[1]],
+    exclusio1=POB_LAB[[2]]
+      )
+
+#study_cohorts2
+
+
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}
+      ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio1)
+  ) %>%
+  
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) 
+  
+
+
+
+if (GRUP2)  {  
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}
+      
+      ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio1)
+  ) %>%
+  consort_box_add(
+    "arm_a", -30, 10, cohort_count_adorn(study_cohorts, treatment_a)
+  ) %>%
+  consort_box_add(
+    "arm_b", 30, 10, cohort_count_adorn(study_cohorts, treatment_b)
+  ) %>%
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) %>%
+  consort_arrow_add(
+    start_x = 0, start_y = 30, end_x = 0, end_y = 20,
+  ) %>%
+  consort_line_add(
+    start_x = -30, start_y = 20, end_x = 30, end_y = 20,
+  ) %>% 
+  consort_arrow_add(
+    end = "arm_a", end_side = "top", start_x = -30, start_y = 20
+  ) %>%
+  consort_arrow_add(
+    end = "arm_b", end_side = "top", start_x = 30, start_y = 20)
+  
+
+
+}
+
+ 
 
 
 
@@ -466,7 +582,43 @@ study_consort %>%
 
 
 
-diagrama_Consort2<-function(dt=dades,TITOL="PUTA")
+#fer-ho més maco!!
+
+study_consort %>%
+  ggplot() + 
+  geom_consort() +
+  theme_consort(margin_h = 8, margin_v = 1) +
+  # you can include other ggplot geoms, as needed -------------
+  ggtext::geom_richtext(
+    aes(x = 0, y = 10, label = !!TITOL),
+    fill = "#9bc0fc"
+  )
+
+
+#study_consort
+
+
+
+
+
+
+
+#
+#
+#
+#
+#################################################
+
+
+}
+
+
+
+
+
+
+
+diagrama_Consort2<-function(dt=dades,TITOL="PP")
   {
 
 
@@ -571,10 +723,178 @@ study_consort %>%
 
 
 
+diagrama_Consort2b<-function(dt=dades,TITOL="kk",TRACT="FF.HTA",GRUP2=TRUE)
+  {
+
+TRACT_sym<-sym(TRACT)
+  
+#dt=dades  
+  
+study_cohorts <- 
+  dt %>%
+  cohort_start(POB_LAB[[1]]) %>%
+  # Define cohorts using named expressions --------------------
+  # [[Definir cohorts utilitzant expressions amb nom]]
+
+  # Notice that you can use previously defined cohorts in subsequent steps
+  # [[Tingueu en compte que podeu utilitzar cohorts definides prèviament en passos posteriors]]
+
+
+  cohort_define(
+    exclusio1 = .full %>% filter(exclusio1 != 1),
+    exclusio2 =  exclusio1 %>% filter(exclusio2 != 1),
+    
+    
+  # anti_join is useful for counting exclusions -------------
+  # [[anti_join és útil per comptar les exclusions]]  
+    exclusio = anti_join(.full,  exclusio2, by = "idp"),
+    exclusio1b = anti_join(.full, exclusio1, by = "idp"),
+    exclusio2b = anti_join( exclusio1, exclusio2, by = "idp"),
+    
+    
+    ) %>%
+  
+  
+  
+  
+  
+  # Provide text labels for cohorts ---------------------------
+  # [[Proporcioneu etiquetes de text per a les cohorts]] 
+  cohort_label(
+    exclusio="EXCLUSIONS",
+    exclusio1b=EXC_LAB[[1]],
+    exclusio2b=EXC_LAB[[2]],
+    exclusio2=POB_LAB[[2]]
+
+  )
+
+#study_cohorts2
 
 
 
-diagrama_Consort3<-function(dt=dades,TITOL="PUTA")
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio2b)}')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio2)
+  ) %>%
+  
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) 
+  
+
+
+if (GRUP2)  {  
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio2b)} ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio2)
+  ) %>%
+  consort_box_add(
+    "arm_a", -30, 10, cohort_count_adorn(study_cohorts, treatment_a)
+  ) %>%
+  consort_box_add(
+    "arm_b", 30, 10, cohort_count_adorn(study_cohorts, treatment_b)
+  ) %>%
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) %>%
+  consort_arrow_add(
+    start_x = 0, start_y = 30, end_x = 0, end_y = 20,
+  ) %>%
+  consort_line_add(
+    start_x = -30, start_y = 20, end_x = 30, end_y = 20,
+  ) %>% 
+  consort_arrow_add(
+    end = "arm_a", end_side = "top", start_x = -30, start_y = 20
+  ) %>%
+  consort_arrow_add(
+    end = "arm_b", end_side = "top", start_x = 30, start_y = 20)
+  
+
+
+}
+
+ 
+
+
+
+
+
+#fer-ho més maco!!
+
+study_consort %>%
+  ggplot() + 
+  geom_consort() +
+  theme_consort(margin_h = 8, margin_v = 1) +
+  # you can include other ggplot geoms, as needed -------------
+  ggtext::geom_richtext(
+    aes(x = 0, y = 10, label = !!TITOL),
+    fill = "#9bc0fc"
+  )
+
+
+#study_consort
+
+
+
+
+
+
+
+#
+#
+#
+#
+#################################################
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+diagrama_Consort3<-function(dt=dades,TITOL="TA")
   {
 
 
@@ -694,7 +1014,7 @@ diagrama_Consort3b<-function(dt=dades,TITOL="capullo",TRACT="FF.HTA",GRUP2=TRUE)
   #TRACT="FF.HTA"
   #GRUP2=FALSE
   
-  #TRACT_sym<-sym(TRACT)
+  TRACT_sym<-sym(TRACT)
   
 study_cohorts <- 
   dt %>%
@@ -883,7 +1203,7 @@ study_consort %>%
 
 
 
-diagrama_Consort4<-function(dt=dades,TITOL="PUTA")
+diagrama_Consort4<-function(dt=dades,TITOL="PA")
   {
 
   
@@ -1003,8 +1323,175 @@ study_consort %>%
 
 
 
+diagrama_Consort4b<-function(dt=dades,TITOL="PP",TRACT="FF.HTA",GRUP2=TRUE)
+  {
 
-diagrama_Consort5<-function(dt=dades,TITOL="PUTA")
+  
+#dt=dades
+
+  TRACT_sym<-sym(TRACT)
+  
+study_cohorts <- 
+  dt %>%
+  cohort_start(POB_LAB[[1]]) %>%
+  # Define cohorts using named expressions --------------------
+  # [[Definir cohorts utilitzant expressions amb nom]]
+
+  # Notice that you can use previously defined cohorts in subsequent steps
+  # [[Tingueu en compte que podeu utilitzar cohorts definides prèviament en passos posteriors]]
+
+
+
+
+  cohort_define(
+    exclusio1 = .full %>% filter(exclusio1 != 1),
+    exclusio2 =  exclusio1 %>% filter(exclusio2 != 1),
+    exclusio3 =  exclusio2 %>% filter(exclusio3 != 1),
+    exclusio4 =  exclusio3 %>% filter(exclusio4 != 1),
+    
+    
+  # anti_join is useful for counting exclusions -------------
+  # [[anti_join és útil per comptar les exclusions]]  
+    exclusio = anti_join(.full,  exclusio4, by = "idp"),
+    exclusio1b = anti_join(.full, exclusio1, by = "idp"),
+    exclusio2b = anti_join( exclusio1, exclusio2, by = "idp"),
+    exclusio3b = anti_join( exclusio2, exclusio3, by = "idp"),
+    exclusio4b = anti_join( exclusio3, exclusio4, by = "idp")
+    
+    ) %>%
+  
+  
+  
+  
+  
+  # Provide text labels for cohorts ---------------------------
+  # [[Proporcioneu etiquetes de text per a les cohorts]] 
+  cohort_label(
+    exclusio="EXCLUSIONS",
+    exclusio1b=EXC_LAB[[1]],
+    exclusio2b=EXC_LAB[[2]],
+    exclusio3b=EXC_LAB[[3]],
+    exclusio4b=EXC_LAB[[4]],
+    exclusio4=POB_LAB[[2]]
+
+  )
+
+#study_cohorts
+
+
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio2b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio3b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio4b)}
+      
+      ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio4)
+  ) %>%
+  
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) 
+  
+
+
+if (GRUP2)  {  
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio2b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio3b)}
+      ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio3)
+  ) %>%
+  consort_box_add(
+    "arm_a", -30, 10, cohort_count_adorn(study_cohorts, treatment_a)
+  ) %>%
+  consort_box_add(
+    "arm_b", 30, 10, cohort_count_adorn(study_cohorts, treatment_b)
+  ) %>%
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) %>%
+  consort_arrow_add(
+    start_x = 0, start_y = 30, end_x = 0, end_y = 20,
+  ) %>%
+  consort_line_add(
+    start_x = -30, start_y = 20, end_x = 30, end_y = 20,
+  ) %>% 
+  consort_arrow_add(
+    end = "arm_a", end_side = "top", start_x = -30, start_y = 20
+  ) %>%
+  consort_arrow_add(
+    end = "arm_b", end_side = "top", start_x = 30, start_y = 20)
+  
+
+
+}
+
+ 
+
+
+
+
+
+#fer-ho més maco!!
+
+study_consort %>%
+  ggplot() + 
+  geom_consort() +
+  theme_consort(margin_h = 8, margin_v = 1) +
+  # you can include other ggplot geoms, as needed -------------
+  ggtext::geom_richtext(
+    aes(x = 0, y = 10, label = !!TITOL),
+    fill = "#9bc0fc"
+  )
+
+
+#study_consort
+
+
+
+
+
+
+
+#
+#
+#
+#
+#################################################
+
+
+}
+
+
+
+
+diagrama_Consort5<-function(dt=dades,TITOL="TA")
   {
 
   
@@ -1118,6 +1605,212 @@ study_consort %>%
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+diagrama_Consort5b<-function(dt=dades,TITOL="PU",TRACT="FF.HTA",GRUP2=TRUE)
+  {
+
+  
+#dt=dades
+
+  TRACT_sym<-sym(TRACT)
+  
+  
+study_cohorts <- 
+  dt %>%
+  cohort_start(POB_LAB[[1]]) %>%
+  # Define cohorts using named expressions --------------------
+  # [[Definir cohorts utilitzant expressions amb nom]]
+
+  # Notice that you can use previously defined cohorts in subsequent steps
+  # [[Tingueu en compte que podeu utilitzar cohorts definides prèviament en passos posteriors]]
+
+
+
+
+  cohort_define(
+    exclusio1 = .full %>% filter(exclusio1 != 1),
+    exclusio2 =  exclusio1 %>% filter(exclusio2 != 1),
+    exclusio3 =  exclusio2 %>% filter(exclusio3 != 1),
+    exclusio4 =  exclusio3 %>% filter(exclusio4 != 1),
+    exclusio5 =  exclusio4 %>% filter(exclusio5 != 1),
+    
+  # anti_join is useful for counting exclusions -------------
+  # [[anti_join és útil per comptar les exclusions]]  
+    exclusio = anti_join(.full,  exclusio5, by = "idp"),
+    exclusio1b = anti_join(.full, exclusio1, by = "idp"),
+    exclusio2b = anti_join( exclusio1, exclusio2, by = "idp"),
+    exclusio3b = anti_join( exclusio2, exclusio3, by = "idp"),
+    exclusio4b = anti_join( exclusio3, exclusio4, by = "idp"),
+    exclusio5b= anti_join( exclusio4, exclusio4, by = "idp")
+    
+    ) %>%
+  
+  
+  
+  
+  
+  # Provide text labels for cohorts ---------------------------
+  # [[Proporcioneu etiquetes de text per a les cohorts]] 
+  cohort_label(
+    exclusio="EXCLUSIONS",
+    exclusio1b=EXC_LAB[[1]],
+    exclusio2b=EXC_LAB[[2]],
+    exclusio3b=EXC_LAB[[3]],
+    exclusio4b=EXC_LAB[[4]],
+    exclusio5b=EXC_LAB[[5]],
+    exclusio5=POB_LAB[[2]]
+
+  )
+
+#study_cohorts
+
+
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio2b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio3b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio4b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio5b)}
+      ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio5)
+  ) %>%
+  
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) 
+  
+
+
+if (GRUP2)  {  
+
+study_consort <- study_cohorts %>%
+  consort_box_add(
+    "full", 0, 50, cohort_count_adorn(study_cohorts, .full)
+  ) %>%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, exclusio)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio1b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio2b)}<br>
+      • {cohort_count_adorn(study_cohorts, exclusio3b)}
+      ')
+  ) %>%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(study_cohorts,exclusio3)
+  ) %>%
+  consort_box_add(
+    "arm_a", -30, 10, cohort_count_adorn(study_cohorts, treatment_a)
+  ) %>%
+  consort_box_add(
+    "arm_b", 30, 10, cohort_count_adorn(study_cohorts, treatment_b)
+  ) %>%
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %>%
+  consort_arrow_add(
+    "full", "bottom", "randomized", "top"
+  ) %>%
+  consort_arrow_add(
+    start_x = 0, start_y = 30, end_x = 0, end_y = 20,
+  ) %>%
+  consort_line_add(
+    start_x = -30, start_y = 20, end_x = 30, end_y = 20,
+  ) %>% 
+  consort_arrow_add(
+    end = "arm_a", end_side = "top", start_x = -30, start_y = 20
+  ) %>%
+  consort_arrow_add(
+    end = "arm_b", end_side = "top", start_x = 30, start_y = 20)
+  
+
+
+}
+
+ 
+
+
+
+
+
+#fer-ho més maco!!
+
+study_consort %>%
+  ggplot() + 
+  geom_consort() +
+  theme_consort(margin_h = 8, margin_v = 1) +
+  # you can include other ggplot geoms, as needed -------------
+  ggtext::geom_richtext(
+    aes(x = 0, y = 10, label = !!TITOL),
+    fill = "#9bc0fc"
+  )
+
+
+#study_consort
+
+
+
+
+
+
+
+#
+#
+#
+#
+#################################################
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 K1=c("exclusio1","exclusio2","exclusio3","exclusio4","exclusio5")
